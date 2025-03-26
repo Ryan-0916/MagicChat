@@ -15,6 +15,7 @@ allprojects {
     apply(plugin = "com.github.johnrengelman.shadow")
 
     repositories {
+        mavenLocal()
         maven {
             name = "papermc"
             url = uri("https://repo.papermc.io/repository/maven-public/")
@@ -22,6 +23,7 @@ allprojects {
     }
 
     dependencies {
+        compileOnly("com.magicrealms:magiclib:1.0")
         compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
         compileOnly("org.projectlombok:lombok:1.18.24")
         annotationProcessor("org.projectlombok:lombok:1.18.24")

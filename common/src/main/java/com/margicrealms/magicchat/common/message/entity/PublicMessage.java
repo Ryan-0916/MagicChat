@@ -1,5 +1,6 @@
 package com.margicrealms.magicchat.common.message.entity;
 
+import com.magicrealms.magiclib.common.MagicRealmsPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,17 +13,13 @@ import java.util.UUID;
  */
 public class PublicMessage extends AbstractMessage {
 
-    public PublicMessage(@NotNull String content) {
-        this(null, content);
+    public PublicMessage(@NotNull MagicRealmsPlugin plugin, @NotNull String content) {
+        this(plugin, null, content);
     }
 
-    /**
-     * 创建一条公共消息
-     * @param
-     * @param content 消息的原始内容
-     */
-    public PublicMessage(@Nullable UUID sender, @NotNull String content) {
-        super(sender, content);
+
+    public PublicMessage(@NotNull MagicRealmsPlugin plugin, @Nullable UUID sender, @NotNull String content) {
+        super(plugin, sender, content);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.margicrealms.magicchat.common.message.entity;
 
+import com.magicrealms.magiclib.common.MagicRealmsPlugin;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -13,11 +14,11 @@ import java.util.UUID;
  * @date 2025-03-19
  */
 @Getter
-@SuppressWarnings("unused")
 public abstract class AbstractMessage {
 
+    private final MagicRealmsPlugin plugin;
     /** 消息创建时间 */
-    protected long createdTime;
+    private final long createdTime;
     /** 消息内容 */
     protected String content;
     /** 原始内容 */
@@ -27,8 +28,8 @@ public abstract class AbstractMessage {
     protected UUID sender;
 
 
-    public AbstractMessage(@NotNull String content) {
-        this(null, content);
+    public AbstractMessage(@NotNull MagicRealmsPlugin plugin, @NotNull String content) {
+        this(plugin,null, content);
     }
 
     /**
@@ -36,10 +37,11 @@ public abstract class AbstractMessage {
      * @param sender 消息发送者的 UUID，如为 NULL 则表示该消息由 PLUGIN 发送
      * @param content 消息的原始内容
      */
-    public AbstractMessage(@Nullable UUID sender, @NotNull String content) {
+    public AbstractMessage(@NotNull MagicRealmsPlugin plugin, @Nullable UUID sender, @NotNull String content) {
+        this.plugin = plugin;
+        this.createdTime = System.currentTimeMillis();
         this.content = content;
         this.content = handleMessage(sender, content);
-
     }
 
     /**

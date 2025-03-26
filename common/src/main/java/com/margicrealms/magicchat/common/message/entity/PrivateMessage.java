@@ -1,5 +1,6 @@
 package com.margicrealms.magicchat.common.message.entity;
 
+import com.magicrealms.magiclib.common.MagicRealmsPlugin;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,12 +18,12 @@ public class PrivateMessage extends AbstractMessage {
     /** 消息的接收者者 */
     private final UUID exclusive;
 
-    public PrivateMessage(@NotNull String content, @NotNull UUID exclusive) {
-        this(null, content, exclusive);
+    public PrivateMessage(@NotNull MagicRealmsPlugin plugin, @NotNull String content, @NotNull UUID exclusive) {
+        this(plugin,null, content, exclusive);
     }
 
-    public PrivateMessage(@Nullable UUID sender, @NotNull String content, @NotNull UUID exclusive) {
-        super(sender, content);
+    public PrivateMessage(@NotNull MagicRealmsPlugin plugin, @Nullable UUID sender, @NotNull String content, @NotNull UUID exclusive) {
+        super(plugin, sender, content);
         this.exclusive = exclusive;
     }
 
