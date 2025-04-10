@@ -1,6 +1,6 @@
 package com.magicrealms.magicchat.core.message.entity;
 
-import com.magicrealms.magiclib.common.MagicRealmsPlugin;
+import com.magicrealms.magiclib.common.message.helper.AdventureHelper;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jetbrains.annotations.Nullable;
@@ -12,6 +12,8 @@ import java.util.UUID;
 /**
  * @author Ryan-0916
  * @Desc 抽象消息类
+ * 该类作为所有消息类的基类，定义了消息的基本属性和通用方法。
+ * 主要用于构建和处理不同类型的消息，提供基本的时间戳、内容以及发送者的信息。
  * @date 2025-03-19
  */
 @Getter
@@ -39,6 +41,18 @@ public abstract class AbstractMessage implements Serializable {
         this.createdTime = System.currentTimeMillis();
         this.originalContent = content;
         this.content = handleMessage(sender, content);
+    }
+
+    /**
+     * 获取消息内容
+     * 将消息内容转换为 MiniMessage 格式，通过 AdventureHelper 工具类进行处理。
+     * 该方法用于将不同格式的文本转换为 MiniMessage 的格式，以支持 Minecraft 的文本样式。
+     * @return 处理后的消息内容，转换为 MiniMessage 格式的文本
+     */
+    public String getContent() {
+        return AdventureHelper.serializeComponent(
+                AdventureHelper.deserializeComponent(
+                        AdventureHelper.legacyToMiniMessage(content)));
     }
 
     /**

@@ -3,7 +3,6 @@ package com.magicrealms.magicchat.core.store;
 import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
 import com.magicrealms.magicchat.core.entity.Member;
-import org.apache.commons.lang3.StringUtils;
 import org.bukkit.entity.Player;
 
 import java.util.Map;

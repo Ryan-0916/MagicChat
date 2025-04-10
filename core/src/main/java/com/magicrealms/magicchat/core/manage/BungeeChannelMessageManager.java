@@ -1,7 +1,7 @@
 package com.magicrealms.magicchat.core.manage;
 
 import com.magicrealms.magicchat.core.MagicChat;
-import com.magicrealms.magicchat.core.message.entity.PublicMessage;
+import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
 import org.bukkit.Bukkit;
 import redis.clients.jedis.Jedis;
@@ -17,10 +17,11 @@ import java.util.function.Consumer;
  * @Desc 说明
  * @date 2025-04-07
  */
+@SuppressWarnings("unused")
 public class BungeeChannelMessageManager extends JedisPubSub {
 
     private final MagicChat PLUGIN;
-    private final Consumer<PublicMessage> MESSAGE_LISTENER;
+    private final Consumer<ChannelMessage> MESSAGE_LISTENER;
     private final Consumer<String> SUBSCRIBE_LISTENER;
     private final Consumer<String> UNSUBSCRIBE_LISTENER;
     private int taskId;
@@ -130,7 +131,7 @@ public class BungeeChannelMessageManager extends JedisPubSub {
         private int port;
         private String password;
         private boolean passwordModel;
-        private Consumer<PublicMessage> messageListener;
+        private Consumer<ChannelMessage> messageListener;
         private Consumer<String> subscribeListener;
         private Consumer<String> unSubscribeListener;
 
@@ -164,7 +165,7 @@ public class BungeeChannelMessageManager extends JedisPubSub {
             return this;
         }
 
-        public Builder messageListener(Consumer<PublicMessage> messageListener) {
+        public Builder messageListener(Consumer<ChannelMessage> messageListener) {
             this.messageListener = messageListener;
             return this;
         }

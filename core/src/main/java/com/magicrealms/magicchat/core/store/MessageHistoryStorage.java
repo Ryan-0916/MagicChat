@@ -4,8 +4,8 @@ import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
 import com.magicrealms.magicchat.core.entity.Member;
 import com.magicrealms.magicchat.core.exception.HistoryStorageAlreadyExistsException;
-import com.magicrealms.magicchat.core.message.entity.PrivateMessage;
-import com.magicrealms.magicchat.core.message.entity.PublicMessage;
+import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
+import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
 
 import java.text.MessageFormat;
@@ -24,15 +24,16 @@ import static com.magicrealms.magicchat.core.MagicChatConstant.*;
  * 通过该类可以初始化消息历史、添加消息并控制历史记录的最大长度。
  * @date 2025-04-08
  */
+@SuppressWarnings("unused")
 public class MessageHistoryStorage {
 
     private static volatile MessageHistoryStorage INSTANCE;
 
     /* 频道消息历史记录 */
-    private final Map<String, ConcurrentLinkedQueue<PublicMessage>> channelMessageHistory;
+    private final Map<String, ConcurrentLinkedQueue<ChannelMessage>> channelMessageHistory;
 
     /* 成员私信消息历史记录 */
-    private final Map<UUID, ConcurrentLinkedQueue<PrivateMessage>> memberMessageHistory;
+    private final Map<UUID, ConcurrentLinkedQueue<ExclusiveMessage>> memberMessageHistory;
 
     private MessageHistoryStorage() {
         channelMessageHistory = new ConcurrentHashMap<>();
@@ -73,7 +74,7 @@ public class MessageHistoryStorage {
      * @param msgHistory 频道的历史消息列表，将被同步到该频道的消息记录中
      * @throws HistoryStorageAlreadyExistsException 如果该频道已有历史记录
      */
-    private void initializeChannelMessageHistoryWithMessages(AbstractChannel channel, List<PublicMessage> msgHistory) {
+    private void initializeChannelMessageHistoryWithMessages(AbstractChannel channel, List<ChannelMessage> msgHistory) {
         initializeMessageHistory(channel.getChannelName(), channelMessageHistory);
         msgHistory.forEach(e -> addMessageToChannel(channel, e));
     }
@@ -96,7 +97,7 @@ public class MessageHistoryStorage {
      * @param msgHistory 成员的历史消息列表，将被同步到该成员的消息记录中
      * @throws HistoryStorageAlreadyExistsException 如果该成员已有历史记录
      */
-    private void initializeMemberMessageHistoryWithMessages(Member member, List<PrivateMessage> msgHistory) {
+    private void initializeMemberMessageHistoryWithMessages(Member member, List<ExclusiveMessage> msgHistory) {
         initializeMessageHistory(member.getMemberId(), memberMessageHistory);
         msgHistory.forEach(e -> addMessageToMember(member, e));
     }
@@ -124,7 +125,7 @@ public class MessageHistoryStorage {
      * @param message 需要添加的公共消息
      * @throws NullPointerException 如果频道未初始化消息记录存储
      */
-    public void addMessageToChannel(AbstractChannel channel, PublicMessage message) {
+    public void addMessageToChannel(AbstractChannel channel, ChannelMessage message) {
         if (!channelMessageHistory.containsKey(channel.getChannelName())) {
             throw new NullPointerException("频道 '" + channel.getChannelName() + "' 没有初始化消息记录存储");
         }
@@ -139,7 +140,7 @@ public class MessageHistoryStorage {
      * @param message 需要添加的私信消息
      * @throws NullPointerException 如果成员未初始化消息记录存储
      */
-    public void addMessageToMember(Member member, PrivateMessage message) {
+    public void addMessageToMember(Member member, ExclusiveMessage message) {
         if (!memberMessageHistory.containsKey(member.getMemberId())) {
             throw new NullPointerException("玩家 '" + member.getMemberName() + "' 没有初始化消息记录存储");
         }
@@ -209,7 +210,7 @@ public class MessageHistoryStorage {
         }
         /* 如果有历史消息，使用这些消息初始化成员的历史记录 */
         initializeMemberMessageHistoryWithMessages(member, history.get().stream()
-                .map(SerializationUtils::<PrivateMessage>deserializeByBase64).collect(Collectors.toList()));
+                .map(SerializationUtils::<ExclusiveMessage>deserializeByBase64).collect(Collectors.toList()));
     }
 
     /**
@@ -234,7 +235,7 @@ public class MessageHistoryStorage {
         }
         /* 如果有历史消息，使用这些消息初始化频道的历史记录 */
         initializeChannelMessageHistoryWithMessages(channel, history.get().stream()
-                .map(SerializationUtils::<PublicMessage>deserializeByBase64).collect(Collectors.toList()));
+                .map(SerializationUtils::<ChannelMessage>deserializeByBase64).collect(Collectors.toList()));
     }
 
     /**
@@ -242,8 +243,8 @@ public class MessageHistoryStorage {
      * @param channel 要查询消息历史记录的频道
      * @return 返回指定频道的消息历史记录，如果没有消息历史记录则返回空的列表
      */
-    public List<PublicMessage> getChannelMessageHistory(AbstractChannel channel) {
-        ConcurrentLinkedQueue<PublicMessage> messages = channelMessageHistory.get(channel.getChannelName());
+    public List<ChannelMessage> getChannelMessageHistory(AbstractChannel channel) {
+        ConcurrentLinkedQueue<ChannelMessage> messages = channelMessageHistory.get(channel.getChannelName());
         /* 如果存在历史记录，则返回它们；否则返回空列表 */
         return messages != null ? new ArrayList<>(messages) : new ArrayList<>();
     }
@@ -253,8 +254,8 @@ public class MessageHistoryStorage {
      * @param member 要查询消息历史记录的成员
      * @return 返回与指定成员的消息历史记录，如果没有消息历史记录则返回空的列表
      */
-    public List<PrivateMessage> getMemberMessageHistory(Member member) {
-        ConcurrentLinkedQueue<PrivateMessage> messages = memberMessageHistory.get(member.getMemberId());
+    public List<ExclusiveMessage> getMemberMessageHistory(Member member) {
+        ConcurrentLinkedQueue<ExclusiveMessage> messages = memberMessageHistory.get(member.getMemberId());
         /* 如果存在历史记录，则返回它们；否则返回空列表 */
         return messages != null ? new ArrayList<>(messages) : new ArrayList<>();
     }

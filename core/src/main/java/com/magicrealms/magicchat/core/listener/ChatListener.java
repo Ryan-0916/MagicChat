@@ -6,8 +6,8 @@ import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.magicrealms.magicchat.core.entity.Member;
 import com.magicrealms.magicchat.core.message.builder.MessageBuilder;
 import com.magicrealms.magicchat.core.message.entity.AbstractMessage;
-import com.magicrealms.magicchat.core.message.entity.PrivateMessage;
-import com.magicrealms.magicchat.core.message.entity.PublicMessage;
+import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
+import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
 import com.magicrealms.magicchat.core.message.enums.MessageType;
 import com.magicrealms.magicchat.core.store.MemberStorage;
 import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
@@ -48,9 +48,9 @@ public class ChatListener {
         event.setCancelled(true);
         AbstractMessage message = new MessageBuilder(event
                 .getPlayer().getUniqueId(), event.getPacket().getStrings().read(0))
-                .build(MessageType.PUBLIC);
+                .build(MessageType.CHANNEL);
         Member member = MemberStorage.getInstance().retrieveMember(event.getPlayer());
-        member.chat((PublicMessage) message);
+        member.chat((ChannelMessage) message);
     }
 
     /**
@@ -74,10 +74,9 @@ public class ChatListener {
         Component component = AdventureHelper.getGson().deserialize(wrappedChatComponentJson);
         String msg = AdventureHelper.serializeComponent(component);
         AbstractMessage message = new MessageBuilder(null, msg
-        ).setExclusive(event.getPlayer().getUniqueId())
-                .build(MessageType.PRIVATE);
+        ).build(MessageType.EXCLUSIVE);
         Member member = MemberStorage.getInstance().retrieveMember(event.getPlayer());
-        MessageHistoryStorage.getInstance().addMessageToMember(member, (PrivateMessage) message);
+        MessageHistoryStorage.getInstance().addMessageToMember(member, (ExclusiveMessage) message);
     }
 
 }

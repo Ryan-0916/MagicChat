@@ -1,7 +1,7 @@
 package com.magicrealms.magicchat.core.channel.entity;
 
 import com.magicrealms.magicchat.core.entity.Member;
-import com.magicrealms.magicchat.core.message.entity.PublicMessage;
+import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,9 +24,9 @@ public abstract class AbstractChannel {
      * 发送消息
      * 该方法是一个抽象方法，具体的发送消息操作由子类实现。
      * 子类需要定义如何实际将消息发送到目标频道或接收方。
-     * @param message 要发送的公共消息 {@link PublicMessage}
+     * @param message 要发送的公共消息 {@link ChannelMessage}
      */
-    public abstract void sendMessage(PublicMessage message);
+    public abstract void sendMessage(ChannelMessage message);
 
     /**
      * 加入频道

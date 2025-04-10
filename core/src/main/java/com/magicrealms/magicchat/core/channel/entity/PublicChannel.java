@@ -3,7 +3,7 @@ package com.magicrealms.magicchat.core.channel.entity;
 import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magicchat.core.entity.Member;
 import com.magicrealms.magicchat.core.manage.BungeeChannelMessageManager;
-import com.magicrealms.magicchat.core.message.entity.PublicMessage;
+import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
 import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
 import com.magicrealms.magiclib.common.enums.ParseType;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
@@ -34,7 +34,7 @@ public class PublicChannel extends AbstractChannel{
     }
 
     @Override
-    public void sendMessage(PublicMessage message) {
+    public void sendMessage(ChannelMessage message) {
         String base64Message = SerializationUtils.serializeByBase64(message);
         /* 发送通知推送 */
         MagicChat.getInstance().getRedisStore().publishValue(MessageFormat.format(BUNGEE_CHANNEL_CHAT,

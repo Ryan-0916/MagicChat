@@ -3,19 +3,23 @@ package com.magicrealms.magicchat.core.entity;
 import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
 import com.magicrealms.magicchat.core.message.entity.AbstractMessage;
-import com.magicrealms.magicchat.core.message.entity.PrivateMessage;
-import com.magicrealms.magicchat.core.message.entity.PublicMessage;
-import com.magicrealms.magicchat.core.message.entity.pub.AbstractToppingMessage;
+import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
+import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
+import com.magicrealms.magicchat.core.message.entity.channel.AbstractToppingMessage;
+import com.magicrealms.magicchat.core.message.entity.exclusive.TypewriterMessage;
 import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
+import com.magicrealms.magiclib.common.utils.StringUtil;
 import com.magicrealms.magiclib.paper.dispatcher.NMSDispatcher;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,6 +42,9 @@ public class Member {
 
     /* 成员名称 */
     private final String memberName;
+
+    /* 打印机所占用的线程 */
+    private BukkitTask TYPEWRITER_TASK;
 
     /**
      * 消息阻塞
@@ -105,11 +112,11 @@ public class Member {
                         MessageHistoryStorage.getInstance().getMemberMessageHistory(this).stream())
                 .filter(m ->
                         /* 私有消息并且为自己可见 */
-                        (m instanceof PrivateMessage privateMessage && privateMessage.getExclusive() == memberId)
+                        (m instanceof ExclusiveMessage exclusiveMessage)
                                 /* 公共消息并且有权限可见 */
-                                || (m instanceof PublicMessage publicMessage && (player.isOp()
-                                || StringUtils.isBlank(publicMessage.getPermissionNode())
-                                || player.hasPermission(publicMessage.getPermissionNode())))
+                                || (m instanceof ChannelMessage channelMessage && (player.isOp()
+                                || StringUtils.isBlank(channelMessage.getPermissionNode())
+                                || player.hasPermission(channelMessage.getPermissionNode())))
                 )
                 .sorted((m1, m2) -> Long.compare(m2.getCreatedTime(), m1.getCreatedTime()))
                 .toList();
@@ -120,7 +127,7 @@ public class Member {
         Optional<AbstractToppingMessage> toppingMessage = allHistory.stream()
                 .filter(m -> m instanceof AbstractToppingMessage)
                 .map(m -> (AbstractToppingMessage) m)
-                .filter(topMessage -> currentTime < topMessage.getCreatedTime() + topMessage.getKeepTime())
+                .filter(topMessage -> currentTime < topMessage.getCreatedTime() + topMessage.getKeepTick() * 50)
                 .findFirst();
         /* 第三步用户可见的100条聊天记录并按时间升序
          * 由于聊天记录的还原越早的发送的消息要放置越前
@@ -147,9 +154,13 @@ public class Member {
      * 发送专属消息
      * 该方法将发送一条私密消息给当前成员，并将其记录到历史消息存储中。
      * 发送完消息后，重置当前对话状态
-     * @param message 要发送的私密消息  {@link PrivateMessage}
+     * @param message 要发送的私密消息  {@link ExclusiveMessage}
      */
-    public void sendMessage(PrivateMessage message) {
+    public void sendMessage(ExclusiveMessage message) {
+        if (message instanceof TypewriterMessage typewriterMessage) {
+            sendTypewriterMessage(typewriterMessage);
+            return;
+        }
         /* 将当前成员的私密消息添加到消息历史中 */
         MessageHistoryStorage.getInstance().addMessageToMember(this, message);
 
@@ -159,18 +170,79 @@ public class Member {
 
         /* 重置聊天对话状态，以便进行下一条消息 */
         resetChatDialog();
-        /* 扩展 QuestionMessage */
     }
 
     /**
      * 聊天
      * 该方法允许当前成员以玩家的口吻向指定的频道发送公开消息。
      * 注意：此方法用于发送公开消息，并通过该成员所属的频道进行广播。
-     * @param message 要发送的公开消息 {@link PublicMessage}
+     * @param message 要发送的公开消息 {@link ChannelMessage}
      */
-    public void chat(PublicMessage message) {
+    public void chat(ChannelMessage message) {
         /* 将消息发送到成员所在的频道 */
         this.channel.sendMessage(message);
+    }
+
+    public void stopTypewriter() {
+        stopBlocking();
+        Optional.ofNullable(TYPEWRITER_TASK).ifPresent(task -> {
+            if (!TYPEWRITER_TASK.isCancelled()) TYPEWRITER_TASK.cancel();
+            TYPEWRITER_TASK = null;
+        });
+    }
+
+    public void sendTypewriterMessage(TypewriterMessage message) {
+        if (isBlocking()) { return; }
+        startBlocking();
+        /* 将消息中的标签解析为列表
+         * 例如 <prefix>前缀</prefix>
+         * 将会转换成 prefix::前缀
+         * 此处的目的是为了支持 MiniMessage 的标签写法
+         * 让截取出来的文本也不会失去 MiniMessage 的色彩或是其他
+         */
+        List<String> labelMsg = StringUtil.getTagsToList(message.getPrintContent());
+        /* 提取去除 MiniMessage 标签后，所显示的真实内容
+         * 例如<red>我是红色</red><yellow>我是黄色</yellow>
+         * 那么此段内容的真实文本为：我是红色我是黄色，我们应当按照
+         * 真实的文字内容计算单个文字的更换时长
+         */
+        String realMessage = labelMsg.stream().map(e -> {
+            String[] parts = e.split("::", 2);
+            return parts.length > 1 ? parts[1] : StringUtil.EMPTY;
+        }).collect(Collectors.joining());
+        /* 当前打印到的字符索引 */
+        AtomicInteger index = new AtomicInteger();
+        /* 当前构建的消息内容 */
+        StringBuilder currentText = new StringBuilder();
+        /* 创建一个新的计时器，用于定时更新 ActionBar 消息 */
+        TYPEWRITER_TASK = Bukkit.getScheduler().runTaskTimer(MagicChat.getInstance(), () -> {
+            Player player = Bukkit.getPlayer(memberId);
+            /* 如果玩家已经离线或打印完整个消息，则关闭计时器任务 */
+            if (player == null || !player.isOnline() || index.get() >= realMessage.length()) {
+                stopTypewriter();
+                return;
+            }
+            int i = 0;
+            /* 遍历标签列表，构建当前应显示的消息内容
+             * 此处是为了不让打印的内容失去 MiniMessage 的色彩或是其他
+             * 如果当前输入的内容位于标签后的首位字符，那将会将当前输出内容拥有的标签拼接到构建的消息内容中 */
+            for (String label : labelMsg) {
+                String[] parts = label.split("::", 2);
+                if (i > index.get()) {
+                    break;
+                } else if (i == index.get() && !parts[0].equals("prefix")) {
+                    currentText.append("<").append(parts[0]).append(">");
+                }
+                i += parts.length >= 2 ? parts[1].length() : 0;
+            }
+            /* 将内容拼接到构建的消息内容中 */
+            currentText.append(realMessage.charAt(index.getAndIncrement()));
+            /* 构建完整的消息，包括前缀和当前消息内容，如果是未结束的文本拼接上省略号 */
+            String m = message.getPrefix() + currentText + (currentText.length() == message.getPrintContent().length() ? StringUtil.EMPTY : "...");
+            List<String> history = getMessageHistory(player);
+            history.add(m);
+            NMSDispatcher.getInstance().resetChatDialog(player, history);
+        }, 0, message.getPrintTick() / (realMessage.length() - 1));
     }
 
 }
