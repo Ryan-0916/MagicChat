@@ -1,6 +1,5 @@
 package com.magicrealms.magicchat.core.message.entity.pub;
 
-import com.magicrealms.magiclib.common.MagicRealmsPlugin;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serial;
