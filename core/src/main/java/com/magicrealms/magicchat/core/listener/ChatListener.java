@@ -1,6 +1,7 @@
 package com.magicrealms.magicchat.core.listener;
 
 import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.magicrealms.magicchat.core.entity.Member;
@@ -40,7 +41,8 @@ public class ChatListener {
      */
     @Receive(protocol = PacketType.Protocol.PLAY,
             sender = PacketType.Sender.CLIENT,
-            packetId = 6)
+            packetId = 6,
+            priority = ListenerPriority.LOWEST)
     public void onChat(PacketEvent event) {
         if (event.isCancelled()) {
             return;
@@ -63,7 +65,8 @@ public class ChatListener {
      */
     @Send(protocol = PacketType.Protocol.PLAY,
             sender = PacketType.Sender.SERVER,
-            packetId = 108)
+            packetId = 108,
+            priority = ListenerPriority.LOWEST)
     public void onSystemChat(PacketEvent event) {
         WrappedChatComponent wrappedChatComponent
                 = event.getPacket().getChatComponents().read(0);

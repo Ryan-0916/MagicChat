@@ -36,7 +36,7 @@ public class MessageBuilder {
         this.CONTENT = content;
     }
 
-    public MessageBuilder setKeepTime(long keepTick) {
+    public MessageBuilder setKeepTick(long keepTick) {
         this.keepTick = keepTick;
         return this;
     }

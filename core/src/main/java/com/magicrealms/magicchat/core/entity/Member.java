@@ -86,7 +86,7 @@ public class Member {
      * 重组成新的聊天框并发包给玩家
      */
     public void resetChatDialog() {
-        if (blocking) { return; }
+        if (isBlocking()) { return; }
         Player player = Bukkit.getPlayer(memberId);
         if (player == null || !player.isOnline()) { return; }
         NMSDispatcher.getInstance().resetChatDialog(player, getMessageHistory(player));
@@ -147,7 +147,7 @@ public class Member {
                 message.remove(0);
             }
         });
-        return message.stream().map(AbstractMessage::getContent).toList();
+        return message.stream().map(AbstractMessage::getContent).collect(Collectors.toList());
     }
 
     /**
@@ -183,12 +183,14 @@ public class Member {
         this.channel.sendMessage(message);
     }
 
-    public void stopTypewriter() {
+    public void stopTypewriter(TypewriterMessage message) {
         stopBlocking();
         Optional.ofNullable(TYPEWRITER_TASK).ifPresent(task -> {
             if (!TYPEWRITER_TASK.isCancelled()) TYPEWRITER_TASK.cancel();
             TYPEWRITER_TASK = null;
         });
+        /* 将当前成员的私密消息添加到消息历史中 */
+        MessageHistoryStorage.getInstance().addMessageToMember(this, message);
     }
 
     public void sendTypewriterMessage(TypewriterMessage message) {
@@ -219,7 +221,7 @@ public class Member {
             Player player = Bukkit.getPlayer(memberId);
             /* 如果玩家已经离线或打印完整个消息，则关闭计时器任务 */
             if (player == null || !player.isOnline() || index.get() >= realMessage.length()) {
-                stopTypewriter();
+                stopTypewriter(message);
                 return;
             }
             int i = 0;
