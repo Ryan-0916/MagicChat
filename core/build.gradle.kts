@@ -25,7 +25,10 @@ tasks.withType<JavaCompile> {
 
 publishing {
     repositories {
-        mavenLocal()
+        maven {
+            name = "myRepositories"
+            url = uri(layout.buildDirectory.dir("file://D:\\Maven\\MavenRepository"))
+        }
     }
     publications {
         create<MavenPublication>("mavenJava") {
