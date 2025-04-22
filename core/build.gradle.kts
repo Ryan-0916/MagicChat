@@ -7,7 +7,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     compileOnly("com.magicrealms:magiclib:1.0")
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
-    compileOnly("com.comphenix.protocol:ProtocolLib:5.3.0")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
 }
 
 java {

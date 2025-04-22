@@ -25,13 +25,19 @@ subprojects {
         }
         mavenCentral()
         mavenLocal()
+        /* PaperMC */
         maven("https://repo.papermc.io/repository/maven-public/")
-        maven("https://repo.dmulloy2.net/repository/public/")
+        /* PacketEvents */
+        maven("https://repo.codemc.io/repository/maven-releases/")
+        maven("https://repo.codemc.io/repository/maven-snapshots/")
     }
+
+    // var target = file("$rootDir/target")
+    var target = file("D:\\Minecraft\\Servers\\1.21.4\\plugins")
 
     if ("core" == project.name) {
         tasks.shadowJar {
-            destinationDirectory.set(file("$rootDir/target"))
+            destinationDirectory.set(target)
             archiveClassifier.set("")
             archiveFileName.set("${rootProject.name}-${projectVersion}.jar")
         }

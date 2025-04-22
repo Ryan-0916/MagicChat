@@ -3,7 +3,10 @@ include(":core")
 pluginManagement {
     repositories {
         gradlePluginPortal()
+        /* PaperMC */
         maven("https://repo.papermc.io/repository/maven-public/")
-        maven("https://repo.dmulloy2.net/repository/public/")
+        /* PacketEvents */
+        maven("https://repo.codemc.io/repository/maven-releases/")
+        maven("https://repo.codemc.io/repository/maven-snapshots/")
     }
 }

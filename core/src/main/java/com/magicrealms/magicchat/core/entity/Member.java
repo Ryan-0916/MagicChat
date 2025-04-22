@@ -6,6 +6,8 @@ import com.magicrealms.magicchat.core.message.entity.AbstractMessage;
 import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
 import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
 import com.magicrealms.magicchat.core.message.entity.channel.AbstractToppingMessage;
+import com.magicrealms.magicchat.core.message.entity.channel.ToppingAllMessage;
+import com.magicrealms.magicchat.core.message.entity.channel.ToppingMessage;
 import com.magicrealms.magicchat.core.message.entity.exclusive.TypewriterMessage;
 import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
@@ -118,7 +120,7 @@ public class Member {
                                 || StringUtils.isBlank(channelMessage.getPermissionNode())
                                 || player.hasPermission(channelMessage.getPermissionNode())))
                 )
-                .sorted((m1, m2) -> Long.compare(m2.getCreatedTime(), m1.getCreatedTime()))
+                .sorted((m1, m2) -> Long.compare(m2.getSentTime(), m1.getSentTime()))
                 .toList();
 
         /* 第二步寻找需要置顶消息
@@ -127,8 +129,12 @@ public class Member {
         Optional<AbstractToppingMessage> toppingMessage = allHistory.stream()
                 .filter(m -> m instanceof AbstractToppingMessage)
                 .map(m -> (AbstractToppingMessage) m)
-                .filter(topMessage -> currentTime < topMessage.getCreatedTime() + topMessage.getKeepTick() * 50)
-                .findFirst();
+                .filter(topMessage ->
+                        (topMessage instanceof ToppingAllMessage
+                                || (topMessage instanceof ToppingMessage t && t.getTarget()
+                                .contains(this.memberId)))
+                                && currentTime < topMessage.getCreatedTime() + topMessage.getKeepTick() * 50)
+                .min((t1, t2) -> Integer.compare(t2.getWeight(), t1.getWeight()));
         /* 第三步用户可见的100条聊天记录并按时间升序
          * 由于聊天记录的还原越早的发送的消息要放置越前
          * 因此该步骤需要按照时间升序 越早的消息排序越前
@@ -190,6 +196,7 @@ public class Member {
             TYPEWRITER_TASK = null;
         });
         /* 将当前成员的私密消息添加到消息历史中 */
+        message.setSentTime(System.currentTimeMillis());
         MessageHistoryStorage.getInstance().addMessageToMember(this, message);
     }
 
@@ -240,7 +247,10 @@ public class Member {
             /* 将内容拼接到构建的消息内容中 */
             currentText.append(realMessage.charAt(index.getAndIncrement()));
             /* 构建完整的消息，包括前缀和当前消息内容，如果是未结束的文本拼接上省略号 */
-            String m = message.getPrefix() + currentText + (currentText.length() == message.getPrintContent().length() ? StringUtil.EMPTY : "...");
+            String m = StringUtils.join(message.getPrefix(),
+                    currentText,
+                    currentText.length() == message.getPrintContent().length() ? StringUtil.EMPTY : "...",
+                    message.getSuffix());
             List<String> history = getMessageHistory(player);
             history.add(m);
             NMSDispatcher.getInstance().resetChatDialog(player, history);

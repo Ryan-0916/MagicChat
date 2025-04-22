@@ -29,7 +29,9 @@ public class MessageBuilder {
     private List<UUID> target;
     private String permissionNode;
     private String prefix;
+    private String suffix;
     private int printTick;
+    private int weight;
 
     public MessageBuilder(@Nullable UUID sender, String content) {
         this.SENDER = sender;
@@ -61,15 +63,25 @@ public class MessageBuilder {
         return this;
     }
 
+    public MessageBuilder setSuffix(String suffix) {
+        this.suffix = suffix;
+        return this;
+    }
+
+    public MessageBuilder setWeight(int weight) {
+        this.weight = weight;
+        return this;
+    }
+
     public AbstractMessage build(MessageType type) {
         return switch (type) {
             case CHANNEL -> new ChannelMessage(SENDER, permissionNode, CONTENT);
             case EXCLUSIVE -> new ExclusiveMessage(SENDER, CONTENT);
-            case TOPPING -> new ToppingMessage(SENDER, permissionNode, CONTENT, keepTick, target);
-            case TOPPING_ALL -> new ToppingAllMessage(SENDER, permissionNode, CONTENT, keepTick);
-            case AT -> new AtMessage(SENDER, permissionNode, CONTENT, keepTick, target);
-            case AT_ALL -> new AtAllMessage(SENDER, permissionNode, CONTENT, keepTick);
-            case TYPEWRITER -> new TypewriterMessage(SENDER, CONTENT, prefix, printTick);
+            case TOPPING -> new ToppingMessage(SENDER, permissionNode, CONTENT, weight, keepTick, target);
+            case TOPPING_ALL -> new ToppingAllMessage(SENDER, permissionNode, CONTENT, weight, keepTick);
+            case AT -> new AtMessage(SENDER, permissionNode, CONTENT, weight, keepTick, target);
+            case AT_ALL -> new AtAllMessage(SENDER, permissionNode, CONTENT, weight, keepTick);
+            case TYPEWRITER -> new TypewriterMessage(SENDER, CONTENT, prefix, suffix, printTick);
         };
     }
 }

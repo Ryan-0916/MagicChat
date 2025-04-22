@@ -2,6 +2,7 @@ package com.magicrealms.magicchat.core.message.entity;
 
 import com.magicrealms.magiclib.common.message.helper.AdventureHelper;
 import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,6 +25,9 @@ public abstract class AbstractMessage implements Serializable {
 
     /** 消息创建时间 */
     private final long createdTime;
+    /** 消息发送时间 */
+    @Setter
+    private long sentTime;
     /** 消息内容 */
     protected String content;
     /** 原始内容 */
@@ -39,6 +43,7 @@ public abstract class AbstractMessage implements Serializable {
      */
     public AbstractMessage(@Nullable UUID sender, String content) {
         this.createdTime = System.currentTimeMillis();
+        this.sentTime = System.currentTimeMillis();
         this.originalContent = content;
         this.content = handleMessage(sender, content);
     }

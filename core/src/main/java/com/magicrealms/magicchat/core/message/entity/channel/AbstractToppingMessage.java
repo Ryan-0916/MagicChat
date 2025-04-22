@@ -23,15 +23,20 @@ public abstract class AbstractToppingMessage extends ChannelMessage {
     /** 保持时间（单位：tick），即消息保持在置顶状态的时间 */
     private final long keepTick;
 
+    /** 权重 */
+    private final int weight;
+
     /**
      * 构造函数，用于创建一条新的置顶消息。
      * @param sender 消息发送者的 UUID，若为 NULL 则表示该消息由系统发送
      * @param permissionNode 拥有此权限节点的玩家才能看到此消息
      * @param content 消息的原始内容，插件需要传入未经过任何处理的文本
+     * @param weight 消息的权重，权重越大优先级越高
      * @param keepTick 该消息保持在置顶状态的时间（单位：tick，1 tick = 1/20 秒）
      */
-    public AbstractToppingMessage(@Nullable UUID sender, @Nullable String permissionNode ,String content, long keepTick) {
+    public AbstractToppingMessage(@Nullable UUID sender, @Nullable String permissionNode ,String content, int weight, long keepTick) {
         super(sender, permissionNode, content);
+        this.weight = weight;
         this.keepTick = keepTick;
     }
 
