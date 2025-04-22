@@ -35,5 +35,8 @@ public enum MessageType {
     AT_ALL,
 
     /* 打印机消息 */
-    TYPEWRITER
+    TYPEWRITER,
+
+    /* 选择器消息 */
+    SELECTOR
 }

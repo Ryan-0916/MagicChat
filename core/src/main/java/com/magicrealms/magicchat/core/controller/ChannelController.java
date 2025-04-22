@@ -3,20 +3,23 @@ package com.magicrealms.magicchat.core.controller;
 import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
 import com.magicrealms.magicchat.core.entity.Member;
 import com.magicrealms.magicchat.core.message.builder.MessageBuilder;
+import com.magicrealms.magicchat.core.message.builder.OptionBuilder;
 import com.magicrealms.magicchat.core.message.entity.AbstractMessage;
-import com.magicrealms.magicchat.core.message.entity.channel.ToppingAllMessage;
+import com.magicrealms.magicchat.core.message.entity.exclusive.SelectorMessage;
 import com.magicrealms.magicchat.core.message.entity.exclusive.TypewriterMessage;
 import com.magicrealms.magicchat.core.message.enums.MessageType;
+import com.magicrealms.magicchat.core.message.enums.OptionType;
 import com.magicrealms.magicchat.core.store.ChannelStorage;
 import com.magicrealms.magicchat.core.store.MemberStorage;
 import com.magicrealms.magiclib.common.command.annotations.Command;
 import com.magicrealms.magiclib.common.command.annotations.CommandListener;
 import com.magicrealms.magiclib.common.command.enums.PermissionType;
+import com.magicrealms.magiclib.common.command.records.ExecutableCommand;
 import com.magicrealms.magiclib.paper.MagicLib;
 import com.magicrealms.magiclib.paper.dispatcher.MessageDispatcher;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
 import java.util.List;
 
 /**
@@ -29,7 +32,7 @@ import java.util.List;
 public class ChannelController {
 
     @Command(text = "^join\\s\\S+$", permissionType = PermissionType.PLAYER)
-    public void test(CommandSender sender, String[] args) {
+    public void join(CommandSender sender, String[] args) {
         Player player = (Player) sender;
         Member member = MemberStorage.getInstance().retrieveMember(player);
         AbstractChannel abstractChannel = ChannelStorage.getInstance().retrieveChannel(args[1]);
@@ -38,40 +41,58 @@ public class ChannelController {
     }
 
     @Command(text = "^test$", permissionType = PermissionType.PLAYER)
-    public void test2(CommandSender sender, String[] args) {
+    public void test(CommandSender sender, String[] args) {
         Player player = (Player) sender;
         Member member = MemberStorage.getInstance().retrieveMember(player);
-        AbstractMessage message = new MessageBuilder(null, "它们曾经是王国的卫士。每一个守护者的存在，都意味着它们与这片土地有着不解的联系。它们的灵魂被锁在遗迹中，无法超生，也无法回归。它们不是简单的敌人，而是被历史和悲剧所困的幽灵。如果你不小心触碰到它们的禁忌，才会引发一场无谓的战斗。")
-                .setPrefix("----------------------------\n艾莉亚（点点头，神情复杂）：")
-                .setSuffix("\nABNCDCXADADAS\n----------------------------")
+        AbstractMessage abstractMessage = new MessageBuilder(null,
+                "&R你好，有一些问题想问您，请选择下列选项")
+                .setPrefix("&R&m&l------------------------------------\n")
+                .setSuffix("&R\n\n滚轮选择您的选项按F确认您的选项\n\n\n&m&l------------------------------------")
                 .setPrintTick(5 * 20)
-                .build(MessageType.TYPEWRITER);
-        member.sendTypewriterMessage((TypewriterMessage) message);
+                .setOptions(List.of(
+                       new OptionBuilder("&R<GRAY>请选择我，我是选项1",
+                               "&R<RED>>>>请选择我我是选项1")
+                               .setCommandFunction(m -> {
+                                   Player player1 = Bukkit.getPlayer(m.getMemberId());
+                                   if (player1 == null) {
+                                       return List.of();
+                                   }
+
+                                   if ("Ryan0916".equals(player1.getName())) {
+                                       return List.of(
+                                               ExecutableCommand.ofConsole("say 我就知道你是帅哥"),
+                                               ExecutableCommand.ofConsole("say 你比那个 Liannai 帅多了")
+                                               );
+                                   }
+
+                                   return List.of(
+                                           ExecutableCommand.ofConsole("say 丑逼"),
+                                           ExecutableCommand.ofConsole("say 丑逼 x 2")
+                                   );
+                               }).build(OptionType.COMMAND),
+                        new OptionBuilder("<GRAY>请选择我，我是选项2",
+                                "<RED>>>>请选择我我是选项2")
+                                .setCommandFunction(m -> {
+                                    Player player1 = Bukkit.getPlayer(m.getMemberId());
+                                    if (player1 == null) {
+                                        return List.of();
+                                    }
+
+                                    if ("Ryan0916".equals(player1.getName())) {
+                                        return List.of(
+                                                ExecutableCommand.ofConsole("say 我就知道你是帅哥"),
+                                                ExecutableCommand.ofConsole("say 你比那个 Liannai 帅多了")
+                                        );
+                                    }
+
+                                    return List.of(
+                                            ExecutableCommand.ofConsole("say 丑逼"),
+                                            ExecutableCommand.ofConsole("say 丑逼 x 2")
+                                    );
+                                }).build(OptionType.COMMAND)
+                )).build(MessageType.SELECTOR);
+        member.sendMessage((SelectorMessage) abstractMessage);
     }
 
-    @Command(text = "^test2$", permissionType = PermissionType.PLAYER)
-    public void test3(CommandSender sender, String[] args) {
-        Player player = (Player) sender;
-        Member member = MemberStorage.getInstance().retrieveMember(player);
-        AbstractMessage message = new MessageBuilder(null, "@Ryan0916 问你一件事")
-                .setKeepTick(20*60*5)
-                .setTarget(List.of(player.getUniqueId()))
-                .setPermissionNode("adasdasd.adasd")
-                .build(MessageType.TOPPING_ALL);
-        member.chat((ToppingAllMessage) message);
-    }
-
-    @Command(text = "^test3$", permissionType = PermissionType.PLAYER)
-    public void test4(CommandSender sender, String[] args) {
-        Player player = (Player) sender;
-        Member member = MemberStorage.getInstance().retrieveMember(player);
-        AbstractMessage message = new MessageBuilder(null, "@Ryan0916 2222222")
-                .setKeepTick(20*30)
-                .setTarget(List.of(player.getUniqueId()))
-                .setWeight(2)
-                .setPermissionNode("adasdasd.adasd")
-                .build(MessageType.TOPPING_ALL);
-        member.chat((ToppingAllMessage) message);
-    }
 
 }

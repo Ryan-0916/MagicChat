@@ -23,10 +23,10 @@ public class TypewriterMessage extends ExclusiveMessage {
     private final int printTick;
 
     /* 消息前缀 */
-    private final String prefix;
+    protected final String prefix;
 
     /* 消息尾缀 */
-    private final String suffix;
+    protected final String suffix;
 
     /**
      * 创建一条具有打字机效果的独占消息。
@@ -57,7 +57,7 @@ public class TypewriterMessage extends ExclusiveMessage {
     public String getContent() {
         return AdventureHelper.serializeComponent(
                 AdventureHelper.deserializeComponent(
-                        AdventureHelper.legacyToMiniMessage(StringUtils.join(prefix, content))));
+                        AdventureHelper.legacyToMiniMessage(StringUtils.join(prefix, content, suffix))));
     }
 
     /**

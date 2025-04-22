@@ -7,10 +7,13 @@ import com.magicrealms.magicchat.core.message.entity.channel.AtAllMessage;
 import com.magicrealms.magicchat.core.message.entity.channel.AtMessage;
 import com.magicrealms.magicchat.core.message.entity.channel.ToppingAllMessage;
 import com.magicrealms.magicchat.core.message.entity.channel.ToppingMessage;
+import com.magicrealms.magicchat.core.message.entity.exclusive.SelectorMessage;
 import com.magicrealms.magicchat.core.message.entity.exclusive.TypewriterMessage;
+import com.magicrealms.magicchat.core.message.entity.option.AbstractOption;
 import com.magicrealms.magicchat.core.message.enums.MessageType;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,6 +35,7 @@ public class MessageBuilder {
     private String suffix;
     private int printTick;
     private int weight;
+    private List<AbstractOption> options;
 
     public MessageBuilder(@Nullable UUID sender, String content) {
         this.SENDER = sender;
@@ -73,6 +77,11 @@ public class MessageBuilder {
         return this;
     }
 
+    public MessageBuilder setOptions(List<AbstractOption> options) {
+        this.options = options;
+        return this;
+    }
+
     public AbstractMessage build(MessageType type) {
         return switch (type) {
             case CHANNEL -> new ChannelMessage(SENDER, permissionNode, CONTENT);
@@ -82,6 +91,7 @@ public class MessageBuilder {
             case AT -> new AtMessage(SENDER, permissionNode, CONTENT, weight, keepTick, target);
             case AT_ALL -> new AtAllMessage(SENDER, permissionNode, CONTENT, weight, keepTick);
             case TYPEWRITER -> new TypewriterMessage(SENDER, CONTENT, prefix, suffix, printTick);
+            case SELECTOR -> new SelectorMessage(SENDER, CONTENT, prefix, suffix, printTick, options);
         };
     }
 }

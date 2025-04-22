@@ -2,26 +2,34 @@ package com.magicrealms.magicchat.core.entity;
 
 import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
+import com.magicrealms.magicchat.core.enums.BlockType;
 import com.magicrealms.magicchat.core.message.entity.AbstractMessage;
 import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
 import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
 import com.magicrealms.magicchat.core.message.entity.channel.AbstractToppingMessage;
 import com.magicrealms.magicchat.core.message.entity.channel.ToppingAllMessage;
 import com.magicrealms.magicchat.core.message.entity.channel.ToppingMessage;
+import com.magicrealms.magicchat.core.message.entity.exclusive.SelectorMessage;
 import com.magicrealms.magicchat.core.message.entity.exclusive.TypewriterMessage;
 import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
+import com.magicrealms.magiclib.common.message.helper.TypewriterHelper;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
-import com.magicrealms.magiclib.common.utils.StringUtil;
 import com.magicrealms.magiclib.paper.dispatcher.NMSDispatcher;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,12 +56,21 @@ public class Member {
     /* 打印机所占用的线程 */
     private BukkitTask TYPEWRITER_TASK;
 
+    /* 最近一次的选择消息 */
+    private SelectorMessage selector;
+
     /**
      * 消息阻塞
      * 动态消息将管理此状态使得此状态下的成员不会自动接收到任何频道内的其他消息
-     * 此玩家的消息将有动态消息事件自动处理
+     * 此玩家的消息将由动态消息事件自动处理
      */
     private boolean blocking;
+
+    /**
+     * 消息阻塞类型
+     * 不同的消息根据不同的阻塞类型处理不同的操作
+     */
+    private BlockType blockType;
 
     public Member(Player player, @NotNull AbstractChannel channel) {
         this.memberId = player.getUniqueId();
@@ -63,12 +80,14 @@ public class Member {
         this.channel.joinChannel(this);
     }
 
-    public void startBlocking() {
+    public void startBlocking(BlockType type) {
         this.blocking = true;
+        this.blockType = type;
     }
 
     public void stopBlocking() {
         this.blocking = false;
+        this.blockType = null;
     }
 
     /**
@@ -88,7 +107,12 @@ public class Member {
      * 重组成新的聊天框并发包给玩家
      */
     public void resetChatDialog() {
-        if (isBlocking()) { return; }
+        if (isBlocking()) {
+            if (blockType == BlockType.SELECTOR) {
+                reloadSelector();
+            }
+            return;
+        }
         Player player = Bukkit.getPlayer(memberId);
         if (player == null || !player.isOnline()) { return; }
         NMSDispatcher.getInstance().resetChatDialog(player, getMessageHistory(player));
@@ -169,11 +193,9 @@ public class Member {
         }
         /* 将当前成员的私密消息添加到消息历史中 */
         MessageHistoryStorage.getInstance().addMessageToMember(this, message);
-
         /* 同步聊天记录至 Redis 队列 */
         MagicChat.getInstance().getRedisStore().rSetValue(MessageFormat.format(MEMBER_MESSAGE_HISTORY,
                 memberName), MAX_HISTORY_SIZE, SerializationUtils.serializeByBase64(message));
-
         /* 重置聊天对话状态，以便进行下一条消息 */
         resetChatDialog();
     }
@@ -190,71 +212,102 @@ public class Member {
     }
 
     public void stopTypewriter(TypewriterMessage message) {
+        /* 关闭阻塞模式 */
         stopBlocking();
+        /* 清理 Task */
         Optional.ofNullable(TYPEWRITER_TASK).ifPresent(task -> {
             if (!TYPEWRITER_TASK.isCancelled()) TYPEWRITER_TASK.cancel();
             TYPEWRITER_TASK = null;
         });
-        /* 将当前成员的私密消息添加到消息历史中 */
-        message.setSentTime(System.currentTimeMillis());
-        MessageHistoryStorage.getInstance().addMessageToMember(this, message);
+        if (message instanceof SelectorMessage selectorMessage) {
+            sendSelectorMessage(selectorMessage);
+        } else {
+            /* 将当前成员的私密消息添加到消息历史中 */
+            message.setSentTime(System.currentTimeMillis());
+            MessageHistoryStorage.getInstance().addMessageToMember(this, message);
+        }
     }
 
-    public void sendTypewriterMessage(TypewriterMessage message) {
+    private void sendSelectorMessage(SelectorMessage message) {
         if (isBlocking()) { return; }
-        startBlocking();
-        /* 将消息中的标签解析为列表
-         * 例如 <prefix>前缀</prefix>
-         * 将会转换成 prefix::前缀
-         * 此处的目的是为了支持 MiniMessage 的标签写法
-         * 让截取出来的文本也不会失去 MiniMessage 的色彩或是其他
-         */
-        List<String> labelMsg = StringUtil.getTagsToList(message.getPrintContent());
-        /* 提取去除 MiniMessage 标签后，所显示的真实内容
-         * 例如<red>我是红色</red><yellow>我是黄色</yellow>
-         * 那么此段内容的真实文本为：我是红色我是黄色，我们应当按照
-         * 真实的文字内容计算单个文字的更换时长
-         */
-        String realMessage = labelMsg.stream().map(e -> {
-            String[] parts = e.split("::", 2);
-            return parts.length > 1 ? parts[1] : StringUtil.EMPTY;
-        }).collect(Collectors.joining());
-        /* 当前打印到的字符索引 */
-        AtomicInteger index = new AtomicInteger();
-        /* 当前构建的消息内容 */
-        StringBuilder currentText = new StringBuilder();
-        /* 创建一个新的计时器，用于定时更新 ActionBar 消息 */
+        selector = message;
+        startBlocking(BlockType.SELECTOR);
+        reloadSelector();
+        Bukkit.getPluginManager().registerEvents(getListener(), MagicChat.getInstance());
+    }
+
+    private @NotNull Listener getListener() {
+        Member member = this;
+        /* 创建监听器 */
+        return new Listener() {
+            @EventHandler(priority = EventPriority.HIGHEST)
+            public void onPlayerSwapHandItemsEvent (PlayerSwapHandItemsEvent e) {
+                if (memberId.equals(e.getPlayer().getUniqueId())) {
+                    e.setCancelled(true);
+                    selector.selected(member);
+                    HandlerList.unregisterAll(this);
+                    resetChatDialog();
+                }
+            }
+
+            @EventHandler(priority = EventPriority.HIGHEST)
+            public void onPlayerQuitEvent(PlayerQuitEvent e) {
+                member.stopBlocking();
+                HandlerList.unregisterAll(this);
+            }
+
+            @EventHandler(priority = EventPriority.HIGHEST)
+            public void onSlotChange(PlayerItemHeldEvent e) {
+                int currentSlot = e.getNewSlot();
+                int lastSlot = e.getPreviousSlot();
+                if (memberId.equals(e.getPlayer().getUniqueId())) {
+                    e.setCancelled(true);
+                    selector.selectOption((currentSlot < lastSlot) ||
+                            (lastSlot == 0 && currentSlot == 8));
+                    reloadSelector();
+                }
+            }
+        };
+    }
+
+    private void reloadSelector() {
+        if (selector == null || !isBlocking()) { return; }
+        Player player = Bukkit.getPlayer(memberId);
+        if (player == null || !player.isOnline()) {
+            return;
+        }
+        List<String> history = getMessageHistory(player);
+        history.add(selector.getContent());
+        NMSDispatcher.getInstance().resetChatDialog(player, history);
+    }
+
+    private void sendTypewriterMessage(TypewriterMessage message) {
+        /* 如果正在阻塞将不会进行打印机效果 */
+        if (isBlocking()) {
+            if (!(message instanceof SelectorMessage selectorMessage)) {
+                message.setSentTime(System.currentTimeMillis());
+                MessageHistoryStorage.getInstance().addMessageToMember(this, message);
+            }
+            return;
+        }
+        startBlocking(BlockType.TYPEWRITER);
+        TypewriterHelper typewriterHelper = new TypewriterHelper(
+                message.getPrintContent(),
+                message.getPrefix(),
+                message instanceof SelectorMessage selectorMessage ? "\n".repeat(selectorMessage.getOptions().size()) + message.getSuffix() :
+                        message.getSuffix()
+        );
         TYPEWRITER_TASK = Bukkit.getScheduler().runTaskTimer(MagicChat.getInstance(), () -> {
             Player player = Bukkit.getPlayer(memberId);
             /* 如果玩家已经离线或打印完整个消息，则关闭计时器任务 */
-            if (player == null || !player.isOnline() || index.get() >= realMessage.length()) {
+            if (player == null || !player.isOnline() || typewriterHelper.isPrinted()) {
                 stopTypewriter(message);
                 return;
             }
-            int i = 0;
-            /* 遍历标签列表，构建当前应显示的消息内容
-             * 此处是为了不让打印的内容失去 MiniMessage 的色彩或是其他
-             * 如果当前输入的内容位于标签后的首位字符，那将会将当前输出内容拥有的标签拼接到构建的消息内容中 */
-            for (String label : labelMsg) {
-                String[] parts = label.split("::", 2);
-                if (i > index.get()) {
-                    break;
-                } else if (i == index.get() && !parts[0].equals("prefix")) {
-                    currentText.append("<").append(parts[0]).append(">");
-                }
-                i += parts.length >= 2 ? parts[1].length() : 0;
-            }
-            /* 将内容拼接到构建的消息内容中 */
-            currentText.append(realMessage.charAt(index.getAndIncrement()));
-            /* 构建完整的消息，包括前缀和当前消息内容，如果是未结束的文本拼接上省略号 */
-            String m = StringUtils.join(message.getPrefix(),
-                    currentText,
-                    currentText.length() == message.getPrintContent().length() ? StringUtil.EMPTY : "...",
-                    message.getSuffix());
+            String m = typewriterHelper.print();
             List<String> history = getMessageHistory(player);
             history.add(m);
             NMSDispatcher.getInstance().resetChatDialog(player, history);
-        }, 0, message.getPrintTick() / (realMessage.length() - 1));
+        }, 0, message.getPrintTick() / (typewriterHelper.getRealContent().length() - 1));
     }
-
 }
