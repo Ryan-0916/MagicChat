@@ -13,6 +13,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static com.magicrealms.magicchat.core.MagicChatConstant.*;
 
@@ -39,9 +40,12 @@ public class PublicChannel extends AbstractChannel{
         /* 发送通知推送 */
         MagicChat.getInstance().getRedisStore().publishValue(MessageFormat.format(BUNGEE_CHANNEL_CHAT,
                 channelName), base64Message);
+
         /* 同步聊天记录至 Redis 队列 */
-        MagicChat.getInstance().getRedisStore().rSetValue(MessageFormat.format(CHANNEL_MESSAGE_HISTORY,
-                channelName), MAX_HISTORY_SIZE, base64Message);
+        CompletableFuture.runAsync(() ->
+                MagicChat.getInstance().getRedisStore().rSetValue(MessageFormat.format(CHANNEL_MESSAGE_HISTORY,
+                        channelName), MAX_HISTORY_SIZE, base64Message)
+        );
     }
 
     @Override

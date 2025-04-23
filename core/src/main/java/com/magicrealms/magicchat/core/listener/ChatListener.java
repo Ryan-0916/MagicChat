@@ -18,7 +18,6 @@ import com.magicrealms.magicchat.core.store.MemberStorage;
 import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
 import com.magicrealms.magiclib.common.message.helper.AdventureHelper;
 import com.magicrealms.magiclib.common.packet.annotations.PacketListener;
-import com.magicrealms.magiclib.common.packet.annotations.Receive;
 import com.magicrealms.magiclib.common.packet.annotations.Send;
 import org.apache.commons.lang3.StringUtils;
 
@@ -41,8 +40,8 @@ public class ChatListener {
      * 对应数据包 {@link PacketType.Play.Server#CHAT_MESSAGE}
      * 将玩家的聊天信息发送至频道内
      */
-    @Receive(state = ConnectionState.PLAY,
-            side = PacketSide.CLIENT,
+    @Send(state = ConnectionState.PLAY,
+            side = PacketSide.SERVER,
             name = "CHAT_MESSAGE",
             priority = PacketListenerPriority.LOWEST)
     public void onChat(PacketReceiveEvent event) {

@@ -97,13 +97,13 @@ public class MagicChat extends MagicRealmsPlugin implements Listener {
                                 "ConsoleMessage.Error.NotPlayer"));
                 case NOT_CONSOLE -> MessageDispatcher.getInstance().
                         sendMessage(this, e.sender(), getConfigManager().getYmlValue(YML_LANGUAGE,
-                                "ConsoleMessage.Error.NotConsole"));
+                                "PlayerMessage.Error.NotConsole"));
                 case UN_KNOWN_COMMAND -> MessageDispatcher.getInstance().
                         sendMessage(this, e.sender(), getConfigManager().getYmlValue(YML_LANGUAGE,
-                                "ConsoleMessage.Error.UnknownCommand"));
+                                "PlayerMessage.Error.UnknownCommand"));
                 case PERMISSION_DENIED -> MessageDispatcher.getInstance().
                         sendMessage(this, e.sender(), getConfigManager().getYmlValue(YML_LANGUAGE,
-                        "ConsoleMessage.Error.PermissionDenied"));
+                        "PlayerMessage.Error.PermissionDenied"));
             }
         });
     }
