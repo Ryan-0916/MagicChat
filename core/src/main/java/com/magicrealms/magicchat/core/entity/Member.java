@@ -16,12 +16,15 @@ import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
 import com.magicrealms.magiclib.common.message.helper.TypewriterHelper;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
 import com.magicrealms.magiclib.paper.dispatcher.NMSDispatcher;
+import it.unimi.dsi.fastutil.Pair;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -135,18 +138,27 @@ public class Member {
     public void resetChatDialog() {
         if (isBlocking()) {
             if (blockingState == BlockingState.SELECTOR && selectorListener != null) {
-                Player player = Bukkit.getPlayer(memberId);
-                if (player == null || !player.isOnline()) { return; }
-                List<String> history = getMessageHistory(player);
-                history.add(selectorListener.getSelector().getContent());
-                NMSDispatcher.getInstance().resetChatDialog(player, history);
+                asyncResetChatDialog(selectorListener.getSelector().getContent());
             }
             return;
         }
-        Player player = Bukkit.getPlayer(memberId);
-        if (player == null || !player.isOnline()) { return; }
-        NMSDispatcher.getInstance()
-                .resetChatDialog(player, getMessageHistory(player));
+        asyncResetChatDialog(null);
+    }
+
+    private void asyncResetChatDialog(@Nullable String appendContent) {
+        CompletableFuture.supplyAsync(() -> {
+            Player player = Bukkit.getPlayer(memberId);
+            if (player == null || !player.isOnline()) {
+                return null;
+            }
+            return Pair.of(player, getMessageHistory(player));
+        }).thenAccept(pair -> {
+            if (pair != null) {
+                List<String> messages = new ArrayList<>(pair.right());
+                Optional.ofNullable(appendContent).ifPresent(messages::add);
+                NMSDispatcher.getInstance().resetChatDialog(pair.left(), messages);
+            }
+        });
     }
 
     /**
