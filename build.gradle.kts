@@ -32,8 +32,8 @@ subprojects {
         maven("https://repo.codemc.io/repository/maven-snapshots/")
     }
 
-    // var target = file("$rootDir/target")
-    var target = file("D:\\Minecraft\\Servers\\1.21.4\\plugins")
+    // val target = file("$rootDir/target")
+    val target = file("D:\\Minecraft\\Servers\\1.21.4\\plugins")
 
     if ("core" == project.name) {
         tasks.shadowJar {
