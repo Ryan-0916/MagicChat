@@ -1,7 +1,7 @@
 package com.magicrealms.magicchat.core.store;
 
 import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
-import com.magicrealms.magicchat.core.channel.entity.PublicChannel;
+import com.magicrealms.magicchat.core.channel.entity.Channel;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,7 +49,7 @@ public class ChannelStorage {
         if (channels.containsKey(channelName)) {
             return channels.get(channelName);
         }
-        PublicChannel channel = new PublicChannel(channelName);
+        Channel channel = new Channel(channelName);
         /* 同步聊天记录 */
         MessageHistoryStorage.getInstance().initializeHistory(channel);
         channels.put(channelName, channel);
@@ -57,7 +57,7 @@ public class ChannelStorage {
     }
 
     public void unsubscribeChannel() {
-        channels.values().stream().filter(e -> e instanceof PublicChannel)
-                .forEach(e -> ((PublicChannel) e).unsubscribe());
+        channels.values().stream().filter(e -> e instanceof Channel)
+                .forEach(e -> ((Channel) e).unsubscribe());
     }
 }

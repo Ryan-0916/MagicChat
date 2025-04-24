@@ -22,14 +22,14 @@ import static com.magicrealms.magicchat.core.MagicChatConstant.*;
  * @Desc 公共频道
  * @date 2025-04-07
  */
-public class PublicChannel extends AbstractChannel{
+public class Channel extends AbstractChannel{
 
     @NotNull
     private final List<Member> members;
 
     private BungeeChannelMessageManager bungeeChannelMessageManager;
 
-    public PublicChannel(String channelName) {
+    public Channel(String channelName) {
         super(channelName);
         this.members = new ArrayList<>();
     }
