@@ -1,7 +1,8 @@
 package com.magicrealms.magicchat.core;
 
-import com.magicrealms.magicchat.core.entity.Member;
-import com.magicrealms.magicchat.core.store.MemberStorage;
+import com.magicrealms.magicchat.core.format.FormatManager;
+import com.magicrealms.magicchat.core.listener.ChatListener;
+import com.magicrealms.magicchat.core.store.ChannelStorage;
 import com.magicrealms.magiclib.common.MagicRealmsPlugin;
 import com.magicrealms.magiclib.common.enums.ParseType;
 import com.magicrealms.magiclib.common.manage.BungeeMessageManager;
@@ -12,9 +13,6 @@ import com.magicrealms.magiclib.common.store.RedisStore;
 import com.magicrealms.magiclib.paper.dispatcher.MessageDispatcher;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import java.util.Optional;
 
 import static com.magicrealms.magicchat.core.MagicChatConstant.*;
@@ -24,7 +22,7 @@ import static com.magicrealms.magicchat.core.MagicChatConstant.*;
  * @Desc 聊天插件启动类
  * @date 2025-04-01
  */
-public class MagicChat extends MagicRealmsPlugin implements Listener {
+public class MagicChat extends MagicRealmsPlugin {
 
     @Getter
     private static MagicChat instance;
@@ -34,6 +32,9 @@ public class MagicChat extends MagicRealmsPlugin implements Listener {
 
     @Getter
     private BungeeMessageManager bungeeMessageManager;
+
+    @Getter
+    private FormatManager formatManager;
 
     public MagicChat() {
         instance = this;
@@ -47,14 +48,15 @@ public class MagicChat extends MagicRealmsPlugin implements Listener {
             registerCommand(commandManager);
             registerPacketListener(packetManager);
             setupRedisStore();
-            getServer().getPluginManager().registerEvents(this, this);
+            getServer().getPluginManager().registerEvents(new ChatListener(), this);
         });
     }
 
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        Member member = MemberStorage.getInstance().retrieveMember(event.getPlayer());
-        member.resetChatDialog();
+    @Override
+    public void onDisable() {
+        super.onDisable();
+        unsubscribe();
+        ChannelStorage.getInstance().unsubscribeChannel();
     }
 
     private void setupRedisStore() {
@@ -78,14 +80,17 @@ public class MagicChat extends MagicRealmsPlugin implements Listener {
     }
 
     private void unsubscribe() {
-        Optional.ofNullable(bungeeMessageManager).ifPresent(BungeeMessageManager::unsubscribe);
+        Optional.ofNullable(bungeeMessageManager)
+                .ifPresent(BungeeMessageManager::unsubscribe);
     }
 
     @Override
     protected void loadConfig(ConfigManager configManager) {
         configManager.loadConfig(YML_CONFIG,
                 YML_LANGUAGE,
-                YML_REDIS);
+                YML_REDIS,
+                YML_FORMAT);
+        this.formatManager = new FormatManager(this);
     }
 
     @Override

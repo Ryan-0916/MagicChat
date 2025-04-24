@@ -1,0 +1,49 @@
+# 格式化
+Format:
+  Format1:
+    # 权重越大优先级越高
+    Priority: 0
+    # 角色
+    # PLAYER 玩家
+    # OP 管理员
+    # PERMISSION 拥有某项权限组
+    # 默认 PLAYER 异常情况下为 PLAYER
+    Role: "PLAYER"
+    # 拥有某项权限 Role 为 PERMISSION 时生效
+    Permission: ""
+    # 前缀
+    Prefix:
+    # 前缀 - NO.1 自定义 Key
+      N1:
+        # 前缀出现的文案
+        Text: "[前缀]"
+        # 鼠标放入文案上出现的内容
+        Hover:
+          - "======================"
+          - "点击执行指令 Seed"
+          - "======================"
+        # 鼠标点击后往聊天框后添加
+        Insertion: "Hello World"
+        # Command > Url > Copy > Suggest 只会生效一个
+        # 鼠标点击后将聊天框后设置指定内容
+        Suggest: "Hello World"
+        # 鼠标点击后输入指令
+        Command: "seed"
+        Url: "https://www.baidu.com/"
+        Copy: "Hello World"
+    Message:
+      DefaultColor: "F"
+      Hover:
+        - "======================"
+        - "点击执行指令 Seed"
+        - "======================"
+      Command: "seed"
+    Suffix:
+      N1:
+        Text: "[后缀]"
+        Hover:
+          - "======================"
+          - "点击打开网站"
+          - "======================"
+        Url: "https://www.baidu.com/"
+

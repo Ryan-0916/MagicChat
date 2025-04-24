@@ -11,15 +11,19 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSy
 import com.magicrealms.magicchat.core.entity.Member;
 import com.magicrealms.magicchat.core.message.builder.MessageBuilder;
 import com.magicrealms.magicchat.core.message.entity.AbstractMessage;
-import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
 import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
+import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
 import com.magicrealms.magicchat.core.message.enums.MessageType;
 import com.magicrealms.magicchat.core.store.MemberStorage;
 import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
 import com.magicrealms.magiclib.common.message.helper.AdventureHelper;
 import com.magicrealms.magiclib.common.packet.annotations.PacketListener;
+import com.magicrealms.magiclib.common.packet.annotations.Receive;
 import com.magicrealms.magiclib.common.packet.annotations.Send;
 import org.apache.commons.lang3.StringUtils;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 import static com.magicrealms.magicchat.core.MagicChatConstant.DIALOG_PATH;
 
@@ -30,30 +34,34 @@ import static com.magicrealms.magicchat.core.MagicChatConstant.DIALOG_PATH;
  */
 @PacketListener
 @SuppressWarnings("unused")
-public class ChatListener {
+public class ChatListener implements Listener {
 
-    /**
-     * 处理服务器接收到玩家聊天数据包时的逻辑
-     * 数据包协议 PLAY {@link ConnectionState#PLAY}
-     * 数据包发送者 SERVER {PacketSide#CLIENT}
-     * 数据包名称 CHAT_MESSAGE
-     * 对应数据包 {@link PacketType.Play.Server#CHAT_MESSAGE}
-     * 将玩家的聊天信息发送至频道内
-     */
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Member member = MemberStorage.getInstance().retrieveMember(event.getPlayer());
+        member.resetChatDialog();
+    }
+
+    @Receive(state = ConnectionState.PLAY,
+            side = PacketSide.CLIENT,
+            name = "CHAT_MESSAGE",
+            priority = PacketListenerPriority.MONITOR)
+    public void onChat(PacketReceiveEvent event) {
+        if (event.isCancelled()) return;
+        Member member = MemberStorage.getInstance().retrieveMember(event.getPlayer());
+        WrapperPlayClientChatMessage chatMessage = new WrapperPlayClientChatMessage(event);
+        AbstractMessage message = new MessageBuilder(event.getUser().getUUID(),
+                chatMessage.getMessage())
+                .build(MessageType.CHANNEL);
+        member.chat((ChannelMessage) message);
+    }
+
     @Send(state = ConnectionState.PLAY,
             side = PacketSide.SERVER,
             name = "CHAT_MESSAGE",
             priority = PacketListenerPriority.LOWEST)
-    public void onChat(PacketReceiveEvent event) {
-        if (event.isCancelled()) { return; }
+    public void onChat(PacketSendEvent event) {
         event.setCancelled(true);
-        WrapperPlayClientChatMessage chatMessage
-                = new WrapperPlayClientChatMessage(event);
-        AbstractMessage message = new MessageBuilder(event.getUser().getUUID(),
-                chatMessage.getMessage())
-                .build(MessageType.CHANNEL);
-        Member member = MemberStorage.getInstance().retrieveMember(event.getPlayer());
-        member.chat((ChannelMessage) message);
     }
 
     /**
@@ -67,7 +75,7 @@ public class ChatListener {
     @Send(state = ConnectionState.PLAY,
             side = PacketSide.SERVER,
             name = "SYSTEM_CHAT_MESSAGE",
-            priority = PacketListenerPriority.LOWEST)
+            priority = PacketListenerPriority.MONITOR)
     public void onSystemChat(PacketSendEvent event) {
         /* 事件已被拦截的消息不进行处理 */
         if (event.isCancelled()) { return; }

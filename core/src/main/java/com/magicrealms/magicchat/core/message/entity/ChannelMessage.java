@@ -1,6 +1,9 @@
 package com.magicrealms.magicchat.core.message.entity;
 
+import com.magicrealms.magicchat.core.MagicChat;
 import lombok.Getter;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serial;
@@ -42,7 +45,11 @@ public class ChannelMessage extends AbstractMessage {
      */
     @Override
     protected String handleMessage(@Nullable UUID sender, String content) {
-        return content;
+        if (sender == null) { return content; }
+        Player player = Bukkit.getPlayer(sender);
+        if (player == null) { return content; }
+        return MagicChat.getInstance()
+                .getFormatManager().format(player, content);
     }
 
 }

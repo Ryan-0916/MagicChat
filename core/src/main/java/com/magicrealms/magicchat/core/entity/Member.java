@@ -200,14 +200,14 @@ public class Member {
                         (topMessage instanceof ToppingAllMessage
                                 || (topMessage instanceof ToppingMessage t && t.getTarget()
                                 .contains(this.memberId)))
-                                && currentTime < topMessage.getCreatedTime() + topMessage.getKeepTick() * 50)
-                .min((t1, t2) -> Integer.compare(t2.getWeight(), t1.getWeight()));
+                                && currentTime < topMessage.getSentTime() + topMessage.getKeepTick() * 50)
+                .min((t1, t2) -> Integer.compare(t2.getPriority(), t1.getPriority()));
         /* 第三步用户可见的100条聊天记录并按时间升序
          * 由于聊天记录的还原越早的发送的消息要放置越前
          * 因此该步骤需要按照时间升序 越早的消息排序越前
          */
         List<AbstractMessage> message = allHistory.stream().limit(MAX_HISTORY_SIZE)
-                .sorted(Comparator.comparingLong(AbstractMessage::getCreatedTime))
+                .sorted(Comparator.comparingLong(AbstractMessage::getSentTime))
                 .collect(Collectors.toList());
         /* 第四步处理置顶消息 （如若存在）
          * 聊天记录中如若存在该置顶消息需要将该消息挪至列表末尾
@@ -230,6 +230,7 @@ public class Member {
      * @param message 要发送的公开消息 {@link ChannelMessage}
      */
     public void chat(ChannelMessage message) {
+        message.setSentTime(System.currentTimeMillis());
         /* 将消息发送到成员所在的频道 */
         this.channel.sendMessage(message);
     }

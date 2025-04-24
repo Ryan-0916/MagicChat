@@ -86,7 +86,8 @@ public class PublicChannel extends AbstractChannel{
                 }).build();
     }
 
-    private void unsubscribe() {
-        Optional.ofNullable(bungeeChannelMessageManager).ifPresent(BungeeChannelMessageManager::unsubscribe);
+    public void unsubscribe() {
+        Optional.ofNullable(bungeeChannelMessageManager)
+                .ifPresent(BungeeChannelMessageManager::unsubscribe);
     }
 }

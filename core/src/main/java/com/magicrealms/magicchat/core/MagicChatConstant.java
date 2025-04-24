@@ -18,6 +18,7 @@ public class MagicChatConstant {
     public static final String YML_CONFIG = "config";
     public static final String YML_REDIS = "redis";
     public static final String YML_LANGUAGE = "language";
+    public static final String YML_FORMAT = "format";
 
     /** Redis 相关 key */
 

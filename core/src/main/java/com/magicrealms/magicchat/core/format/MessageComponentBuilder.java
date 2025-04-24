@@ -1,0 +1,35 @@
+package com.magicrealms.magicchat.core.format;
+
+import com.magicrealms.magicchat.core.format.entity.FormatDecoration;
+import com.magicrealms.magicchat.core.format.entity.MessageFormatConfig;
+
+import java.util.stream.Collectors;
+
+/**
+ * @author Ryan-0916
+ * @Desc 说明
+ * @date 2025-04-24
+ */
+public class MessageComponentBuilder {
+
+    private final MessageDecorator decorator = new MessageDecorator();
+
+    public String buildMessageComponent(MessageFormatConfig config, String originalMsg) {
+        return new StringBuilder()
+                /* Message 部分 */
+                .append(decorator.decorateWithEvent(config.getMessage().getDefaultColor() + originalMsg, config.getMessage().getEvent()))
+                        /* 前缀部分 */
+                        .insert(0,
+                                config.getPrefixes().stream()
+                                        .map(this::buildDecoration)
+                                        .collect(Collectors.joining()))
+                                /* 后缀部分 */
+                                .append(config.getSuffixes().stream()
+                                        .map(this::buildDecoration)
+                                        .collect(Collectors.joining())).toString();
+    }
+
+    private String buildDecoration(FormatDecoration decoration) {
+        return decorator.decorateWithEvent(decoration.getText(), decoration.getEvent());
+    }
+}

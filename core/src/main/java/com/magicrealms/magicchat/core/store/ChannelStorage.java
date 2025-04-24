@@ -56,4 +56,8 @@ public class ChannelStorage {
         return channel;
     }
 
+    public void unsubscribeChannel() {
+        channels.values().stream().filter(e -> e instanceof PublicChannel)
+                .forEach(e -> ((PublicChannel) e).unsubscribe());
+    }
 }
