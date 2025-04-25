@@ -32,7 +32,7 @@ Format:
         Url: "https://www.baidu.com/"
         Copy: "Hello World"
     Message:
-      DefaultColor: "F"
+      Prefix: "&F"
       Hover:
         - "======================"
         - "点击执行指令 Seed"

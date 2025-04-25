@@ -11,6 +11,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class FormatMessage {
-    private String defaultColor;
+    private String prefix;
     private FormatEvent event;
 }

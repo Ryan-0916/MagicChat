@@ -15,13 +15,12 @@ import org.bukkit.entity.Player;
 
 /**
  * @author Ryan-0916
- * @Desc 说明
+ * @Desc 频道部分指令
  * @date 2025-04-09
  */
 @CommandListener
 @SuppressWarnings("unused")
 public class ChannelController {
-
 
     @Command(text = "^join\\s\\S+", permissionType = PermissionType.PLAYER)
     public void join(CommandSender sender, String[] args) {

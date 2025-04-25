@@ -48,6 +48,7 @@ public class MagicChat extends MagicRealmsPlugin {
             registerCommand(commandManager);
             registerPacketListener(packetManager);
             setupRedisStore();
+            setupFormat();
             getServer().getPluginManager().registerEvents(new ChatListener(), this);
         });
     }
@@ -56,15 +57,19 @@ public class MagicChat extends MagicRealmsPlugin {
     public void onDisable() {
         super.onDisable();
         unsubscribe();
-        ChannelStorage.getInstance().unsubscribeChannel();
     }
 
-    private void setupRedisStore() {
+    public void setupFormat() {
+        this.formatManager = new FormatManager(this);
+    }
+
+    public void setupRedisStore() {
         String host = getConfigManager().getYmlValue(YML_REDIS, "DataSource.Host"), password = getConfigManager().getYmlValue(YML_REDIS, "DataSource.Password");
         int port = getConfigManager().getYmlValue(YML_REDIS, "DataSource.Port", 6379, ParseType.INTEGER);
         boolean redisPasswordModel = getConfigManager().getYmlValue(YML_REDIS, "DataSource.PasswordModel", false, ParseType.BOOLEAN);
         this.redisStore = new RedisStore(this, host, port, redisPasswordModel ? password : null);
         this.unsubscribe();
+        ChannelStorage.getInstance().subscribeChannel();
         this.bungeeMessageManager = new BungeeMessageManager.Builder().channel(BUNGEE_CHANNEL)
                 .plugin(this)
                 .host(host)
@@ -82,6 +87,8 @@ public class MagicChat extends MagicRealmsPlugin {
     private void unsubscribe() {
         Optional.ofNullable(bungeeMessageManager)
                 .ifPresent(BungeeMessageManager::unsubscribe);
+        ChannelStorage.getInstance()
+                .unsubscribeChannel();
     }
 
     @Override
@@ -90,7 +97,6 @@ public class MagicChat extends MagicRealmsPlugin {
                 YML_LANGUAGE,
                 YML_REDIS,
                 YML_FORMAT);
-        this.formatManager = new FormatManager(this);
     }
 
     @Override

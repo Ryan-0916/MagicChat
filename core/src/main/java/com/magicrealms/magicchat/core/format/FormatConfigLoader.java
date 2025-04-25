@@ -10,9 +10,12 @@ import com.magicrealms.magiclib.common.enums.ParseType;
 import com.magicrealms.magiclib.common.manage.ConfigManager;
 import com.magicrealms.magiclib.common.utils.EnumUtil;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.magicrealms.magicchat.core.MagicChatConstant.YML_FORMAT;
@@ -49,7 +52,7 @@ public class FormatConfigLoader {
                 .role(EnumUtil.getMatchingEnum(FormatRole.class,
                                 configManager.getYmlValue(YML_FORMAT, basePath + ".Role"))
                         .orElse(FormatRole.PLAYER))
-                .permissionNode(configManager.getYmlValue(YML_FORMAT,basePath + ".Permission"))
+                .permissionNode(getYmlValueIfExists(basePath + ".Permission"))
                 .prefixes(loadDecorations(basePath + ".Prefix"))
                 .suffixes(loadDecorations(basePath + ".Suffix"))
                 .message(loadMessage(basePath + ".Message"))
@@ -58,17 +61,16 @@ public class FormatConfigLoader {
     }
 
     private List<FormatDecoration> loadDecorations(String path) {
-        return configManager
-                .getYmlSubKeys(YML_FORMAT, path, false)
-                .map(keys -> keys.stream()
+        return  getYmlSubKeyIfExists(path)
+                    .map(keys -> keys.stream()
                         .map(key -> buildDecoration(path + "." + key))
                         .collect(Collectors.toList()))
-                .orElseGet(ArrayList::new);
+                    .orElseGet(ArrayList::new);
     }
 
     private FormatMessage loadMessage(String path) {
         return FormatMessage.builder()
-                .defaultColor(configManager.getYmlValue(YML_FORMAT,path + ".DefaultColor"))
+                .prefix(getYmlValueIfExists(path + ".Prefix"))
                 .event(buildEvent(path))
                 .build();
 
@@ -76,20 +78,34 @@ public class FormatConfigLoader {
 
     private FormatDecoration buildDecoration(String path) {
         return FormatDecoration.builder()
-                .text(configManager.getYmlValue(YML_FORMAT,path + ".Text"))
+                .text(getYmlValueIfExists(path + ".Text"))
                 .event(buildEvent(path))
                 .build();
     }
 
     private FormatEvent buildEvent(String path) {
         return FormatEvent.builder()
-                .url(configManager.getYmlValue(YML_FORMAT,path + ".Url"))
-                .copy(configManager.getYmlValue(YML_FORMAT,path + ".Copy"))
-                .suggest(configManager.getYmlValue(YML_FORMAT,path + ".Suggest"))
-                .insertion(configManager.getYmlValue(YML_FORMAT,path + ".Insertion"))
+                .url(getYmlValueIfExists(path + ".Url"))
+                .copy(getYmlValueIfExists(path + ".Copy"))
+                .suggest(getYmlValueIfExists(path + ".Suggest"))
+                .insertion(getYmlValueIfExists(path + ".Insertion"))
                 .hover(configManager.getYmlListValue(YML_FORMAT, path + ".Hover").orElse(List.of()))
-                .command(configManager.getYmlValue(YML_FORMAT,path + ".Command"))
+                .command(getYmlValueIfExists(path + ".Command"))
                 .build();
+    }
+
+    private String getYmlValueIfExists(String path) {
+        if (configManager.containsYmlKey(YML_FORMAT, path)) {
+            return configManager.getYmlValue(YML_FORMAT, path);
+        }
+        return StringUtils.EMPTY;
+    }
+
+    private Optional<Set<String>> getYmlSubKeyIfExists(String path) {
+        if (configManager.containsYmlKey(YML_FORMAT, path)) {
+            return configManager.getYmlSubKeys(YML_FORMAT, path, false);
+        }
+        return Optional.empty();
     }
 
 }

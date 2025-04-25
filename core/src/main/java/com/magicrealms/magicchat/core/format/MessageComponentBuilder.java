@@ -15,9 +15,10 @@ public class MessageComponentBuilder {
     private final MessageDecorator decorator = new MessageDecorator();
 
     public String buildMessageComponent(MessageFormatConfig config, String originalMsg) {
+        originalMsg =  originalMsg.replaceAll("(</?[a-zA-Z][^>]*>)", "\\\\$1");
         return new StringBuilder()
                 /* Message 部分 */
-                .append(decorator.decorateWithEvent(config.getMessage().getDefaultColor() + originalMsg, config.getMessage().getEvent()))
+                .append(decorator.decorateWithEvent(config.getMessage().getPrefix() + originalMsg, config.getMessage().getEvent()))
                         /* 前缀部分 */
                         .insert(0,
                                 config.getPrefixes().stream()

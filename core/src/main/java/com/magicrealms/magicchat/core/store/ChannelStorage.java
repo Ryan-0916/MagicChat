@@ -60,4 +60,9 @@ public class ChannelStorage {
         channels.values().stream().filter(e -> e instanceof Channel)
                 .forEach(e -> ((Channel) e).unsubscribe());
     }
+
+    public void subscribeChannel() {
+        channels.values().stream().filter(e -> e instanceof Channel)
+                .forEach(e -> ((Channel) e).subscribe());
+    }
 }

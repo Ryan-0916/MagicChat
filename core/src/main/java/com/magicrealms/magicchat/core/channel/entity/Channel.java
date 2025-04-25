@@ -63,7 +63,7 @@ public class Channel extends AbstractChannel{
         }
     }
 
-    private void subscribe() {
+    public void subscribe() {
         MagicChat plugin = MagicChat.getInstance();
         String host = plugin.getConfigManager().getYmlValue(YML_REDIS, "DataSource.Host"), password = plugin.getConfigManager().getYmlValue(YML_REDIS, "DataSource.Password");
         int port = plugin.getConfigManager().getYmlValue(YML_REDIS, "DataSource.Port", 6379, ParseType.INTEGER);
