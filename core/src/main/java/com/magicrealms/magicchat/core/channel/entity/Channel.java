@@ -1,11 +1,15 @@
 package com.magicrealms.magicchat.core.channel.entity;
 
 import com.magicrealms.magicchat.core.MagicChat;
+import com.magicrealms.magicchat.core.bungee.BungeeMessage;
+import com.magicrealms.magicchat.core.bungee.RetractInfo;
 import com.magicrealms.magicchat.core.entity.Member;
-import com.magicrealms.magicchat.core.manage.BungeeChannelMessageManager;
+import com.magicrealms.magicchat.core.bungee.BungeeChannelMessageManager;
+import com.magicrealms.magicchat.core.message.entity.AbstractMessage;
 import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
 import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
 import com.magicrealms.magiclib.common.enums.ParseType;
+import com.magicrealms.magiclib.common.utils.JsonUtil;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,7 +17,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static com.magicrealms.magicchat.core.MagicChatConstant.*;
 
@@ -37,10 +43,10 @@ public class Channel extends AbstractChannel{
     @Override
     public void sendMessage(ChannelMessage message) {
         String base64Message = SerializationUtils.serializeByBase64(message);
+
         /* 发送通知推送 */
         MagicChat.getInstance().getRedisStore().publishValue(MessageFormat.format(BUNGEE_CHANNEL_CHAT,
-                channelName), base64Message);
-
+                channelName), JsonUtil.objectToJson(BungeeMessage.ofSend(base64Message)));
         /* 同步聊天记录至 Redis 队列 */
         CompletableFuture.runAsync(() ->
                 MagicChat.getInstance().getRedisStore().rSetValue(MessageFormat.format(CHANNEL_MESSAGE_HISTORY,
@@ -76,18 +82,62 @@ public class Channel extends AbstractChannel{
                 .port(port)
                 .passwordModel(redisPasswordModel)
                 .password(password)
-                .messageListener(message -> {
+                .sendListener(message -> {
                     /* 捕获通知推送 尝试将消息添加至聊天记录中 */
                     MessageHistoryStorage.getInstance().addMessageToChannel(this, message);
                     /* 重置每个人的聊天框 */
                     for (Member member : members) {
                         member.resetChatDialog();
                     }
-                }).build();
+                })
+                .retractListener(retractInfo -> {
+                    /* 捕获通知推送 尝试将消息添加至聊天记录中 */
+                    MessageHistoryStorage.getInstance().retractChannelMessage(this, retractInfo);
+                    /* 重置每个人的聊天框 */
+                    for (Member member : members) {
+                        member.resetChatDialog();
+                    }
+                })
+                .build();
     }
 
     public void unsubscribe() {
         Optional.ofNullable(bungeeChannelMessageManager)
                 .ifPresent(BungeeChannelMessageManager::unsubscribe);
+    }
+
+    /* 撤回消息 */
+    public void retractMessage(UUID messageId, UUID receiverBy) {
+        /* 回收本地缓存消息 */
+        MagicChat.getInstance().getRedisStore().publishValue(MessageFormat.format(BUNGEE_CHANNEL_CHAT,
+                channelName), JsonUtil.objectToJson(BungeeMessage.ofRetract(RetractInfo.of(messageId, receiverBy))));
+        /* 回收 Redis 队列中的消息 */
+        CompletableFuture.runAsync(() ->
+        {
+            /* TODO: 加锁 不推荐使用，推荐使用从队列中移除并新增，可能出现线程安全问题 */
+            /* 获取队列中的全部消息 */
+            Optional<List<String>> history = MagicChat.getInstance().getRedisStore()
+                    .getAllValue(MessageFormat.format(CHANNEL_MESSAGE_HISTORY, channelName));
+            if (history.isEmpty()) {
+                return;
+            }
+            List<AbstractMessage> updatedMessages = history.get().stream()
+                    .map(SerializationUtils::<ChannelMessage>deserializeByBase64)
+                    .peek(msg -> {
+                        if (msg.getMessageId().equals(messageId) && !msg.isRetracted()) {
+                            msg.setRetracted(true);
+                            msg.setRetractedBy(receiverBy);
+                        }
+                    })
+                    .collect(Collectors.toList());
+            String[] serializedMessages = updatedMessages.stream()
+                    .map(SerializationUtils::serializeByBase64)
+                    .toArray(String[]::new);
+            MagicChat.getInstance().getRedisStore().rSetValue(
+                    MessageFormat.format(CHANNEL_MESSAGE_HISTORY, channelName),
+                    MAX_HISTORY_SIZE,
+                    serializedMessages
+            );
+        });
     }
 }

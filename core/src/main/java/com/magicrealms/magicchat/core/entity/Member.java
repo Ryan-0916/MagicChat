@@ -54,6 +54,8 @@ public class Member {
     private volatile BukkitTask typewriterTask;
     /* 选择器监听器 */
     private SelectorListener selectorListener;
+    /* 消息撤回模式 */
+    private boolean undoMessagesMode;
 
     public Member(Player player, @NotNull AbstractChannel channel) {
         this.memberId = player.getUniqueId();
@@ -61,6 +63,12 @@ public class Member {
         this.channel = channel;
         /* 初始化玩家频道 */
         this.channel.joinChannel(this);
+    }
+
+    /* 自动开关消息撤回模式 */
+    public boolean toggleUndoMessagesMode() {
+        this.undoMessagesMode = !this.undoMessagesMode;
+        return this.undoMessagesMode;
     }
 
     private boolean isBlocking() {
@@ -220,7 +228,10 @@ public class Member {
                 message.remove(0);
             }
         });
-        return message.stream().map(AbstractMessage::getContent).collect(Collectors.toList());
+        return message
+                .stream()
+                .map(msg -> msg.isRetracted() ? "<GRAY>该消息已被撤回" : msg.getContent())
+                .collect(Collectors.toList());
     }
 
     /**

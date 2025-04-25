@@ -2,7 +2,9 @@ package com.magicrealms.magicchat.core.format;
 
 import com.magicrealms.magicchat.core.format.entity.FormatDecoration;
 import com.magicrealms.magicchat.core.format.entity.MessageFormatConfig;
+import com.magicrealms.magiclib.common.utils.StringUtil;
 
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -14,20 +16,27 @@ public class MessageComponentBuilder {
 
     private final MessageDecorator decorator = new MessageDecorator();
 
-    public String buildMessageComponent(MessageFormatConfig config, String originalMsg) {
+    public String buildMessageComponent(MessageFormatConfig config, String originalMsg,
+                                        UUID messageUUID) {
         originalMsg =  originalMsg.replaceAll("(</?[a-zA-Z][^>]*>)", "\\\\$1");
-        return new StringBuilder()
+
+        String eventMsg = new StringBuilder()
+                .append(config.getMessage().getPrefix())
                 /* Message 部分 */
-                .append(decorator.decorateWithEvent(config.getMessage().getPrefix() + originalMsg, config.getMessage().getEvent()))
-                        /* 前缀部分 */
-                        .insert(0,
-                                config.getPrefixes().stream()
-                                        .map(this::buildDecoration)
-                                        .collect(Collectors.joining()))
-                                /* 后缀部分 */
-                                .append(config.getSuffixes().stream()
-                                        .map(this::buildDecoration)
-                                        .collect(Collectors.joining())).toString();
+                .append(decorator.decorateWithEvent(originalMsg, config.getMessage().getEvent()))
+                /* 前缀部分 */
+                .insert(0,
+                        config.getPrefixes().stream()
+                                .map(this::buildDecoration)
+                                .collect(Collectors.joining()))
+                /* 后缀部分 */
+                .append(config.getSuffixes().stream()
+                        .map(this::buildDecoration)
+                        .collect(Collectors.joining())).toString();
+
+        System.out.println(eventMsg);
+
+        return StringUtil.replacePlaceholder(eventMsg, "message_id", messageUUID.toString());
     }
 
     private String buildDecoration(FormatDecoration decoration) {

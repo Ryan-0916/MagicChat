@@ -1,1 +1,6 @@
 DefaultChannel: "默认频道"
+
+# 模块
+Model:
+  Retract:
+    Enable: true

@@ -4,6 +4,7 @@ import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
 import com.magicrealms.magicchat.core.entity.Member;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.UUID;
@@ -49,6 +50,7 @@ public class MemberStorage {
      * @param player 玩家对象，用于创建成员
      * @return 返回已注册或新创建的成员对象
      */
+    @NotNull
     public Member retrieveMember(Player player) {
         /* 成员已注册 */
         if (members.containsKey(player.getUniqueId())) {

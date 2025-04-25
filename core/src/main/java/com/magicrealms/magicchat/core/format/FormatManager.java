@@ -24,11 +24,11 @@ public class FormatManager {
         this.componentBuilder = new MessageComponentBuilder();
     }
 
-    public String format(Player player, String msg) {
+    public String format(Player player, String msg, UUID messageId) {
         return configLoader.getConfigs().stream()
                 .filter(e -> FormatConfigFilter.INSTANCE.filter(e, player))
                 .max(Comparator.comparingInt(MessageFormatConfig::getPriority))
-                .map(config -> componentBuilder.buildMessageComponent(config, msg))
+                .map(config -> componentBuilder.buildMessageComponent(config, msg, messageId))
                 .orElse(msg);
     }
 }

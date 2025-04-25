@@ -23,6 +23,14 @@ public abstract class AbstractMessage implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    private final UUID messageId;
+
+    @Setter
+    private boolean retracted;
+
+    @Setter
+    private UUID retractedBy;
+
     /** 消息创建时间 */
     private final long createdTime;
     /** 消息发送时间 */
@@ -42,6 +50,7 @@ public abstract class AbstractMessage implements Serializable {
      * @param content 消息的原始内容
      */
     public AbstractMessage(@Nullable UUID sender, String content) {
+        this.messageId = UUID.randomUUID();
         this.createdTime = System.currentTimeMillis();
         this.sentTime = System.currentTimeMillis();
         this.originalContent = content;

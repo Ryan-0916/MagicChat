@@ -91,8 +91,12 @@ PlayerMessage:
     NotConsole: "此命令仅控制台可用"
     UnknownCommand: "未知的指令"
     ReloadFile: "重载文件异常"
+    RetractExclusiveChannel: "专属频道消息无法被撤回！"
   Success:
     ReloadFile: "重载文件成功"
+    ToggleUndoEnable: "消息撤回模式：启用，请点击您需要回收的消息"
+    ToggleUndoUnEnable: "消息撤回模式：禁用"
+    Retract: "您成功的撤回了一条消息"
 ConsoleMessage:
   Error:
     NotPlayer: "此命令仅玩家可用"

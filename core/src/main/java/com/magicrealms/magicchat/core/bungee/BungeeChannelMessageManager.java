@@ -1,7 +1,8 @@
-package com.magicrealms.magicchat.core.manage;
+package com.magicrealms.magicchat.core.bungee;
 
 import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
+import com.magicrealms.magiclib.common.utils.JsonUtil;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
 import org.bukkit.Bukkit;
 import redis.clients.jedis.Jedis;
@@ -21,7 +22,8 @@ import java.util.function.Consumer;
 public class BungeeChannelMessageManager extends JedisPubSub {
 
     private final MagicChat PLUGIN;
-    private final Consumer<ChannelMessage> MESSAGE_LISTENER;
+    private final Consumer<ChannelMessage> SEND_LISTENER;
+    private final Consumer<RetractInfo> RETRACT_LISTENER;
     private final Consumer<String> SUBSCRIBE_LISTENER;
     private final Consumer<String> UNSUBSCRIBE_LISTENER;
     private int taskId;
@@ -29,7 +31,8 @@ public class BungeeChannelMessageManager extends JedisPubSub {
 
     private BungeeChannelMessageManager(Builder builder) {
         this.PLUGIN = builder.plugin;
-        this.MESSAGE_LISTENER = builder.messageListener;
+        this.SEND_LISTENER = builder.sendListener;
+        this.RETRACT_LISTENER = builder.retractListener;
         this.SUBSCRIBE_LISTENER = builder.subscribeListener;
         this.UNSUBSCRIBE_LISTENER = builder.unSubscribeListener;
         this.taskId = -1;
@@ -38,8 +41,12 @@ public class BungeeChannelMessageManager extends JedisPubSub {
             throw new NullPointerException("Bungee消息 Plugin 属性不可为空");
         }
 
-        if (MESSAGE_LISTENER == null) {
-            throw new NullPointerException("Bungee消息 MessageListener 属性不可为空");
+        if (SEND_LISTENER == null) {
+            throw new NullPointerException("Bungee消息 SendListener 属性不可为空");
+        }
+
+        if (RETRACT_LISTENER == null) {
+            throw new NullPointerException("Bungee消息 RetractListener 属性不可为空");
         }
 
         if (builder.channel == null) {
@@ -85,7 +92,15 @@ public class BungeeChannelMessageManager extends JedisPubSub {
     @Override
     public void onMessage(String channel, String message) {
         /* 取得订阅的消息后的处理 */
-        MESSAGE_LISTENER.accept(SerializationUtils.deserializeByBase64(message));
+        BungeeMessage bm = JsonUtil.jsonToObject(message, BungeeMessage.class);
+        if (bm == null) {
+            return;
+        }
+        if (bm.event() == BungeeMessageEvent.SEND) {
+            SEND_LISTENER.accept(SerializationUtils.deserializeByBase64(bm.serializeBase64Msg()));
+        } else if (bm.event() == BungeeMessageEvent.RETRACT){
+            RETRACT_LISTENER.accept(bm.retractInfo());
+        }
     }
 
     /**
@@ -131,7 +146,8 @@ public class BungeeChannelMessageManager extends JedisPubSub {
         private int port;
         private String password;
         private boolean passwordModel;
-        private Consumer<ChannelMessage> messageListener;
+        private Consumer<ChannelMessage> sendListener;
+        public Consumer<RetractInfo> retractListener;
         private Consumer<String> subscribeListener;
         private Consumer<String> unSubscribeListener;
 
@@ -165,8 +181,13 @@ public class BungeeChannelMessageManager extends JedisPubSub {
             return this;
         }
 
-        public Builder messageListener(Consumer<ChannelMessage> messageListener) {
-            this.messageListener = messageListener;
+        public Builder sendListener(Consumer<ChannelMessage> sendListener) {
+            this.sendListener = sendListener;
+            return this;
+        }
+
+        public Builder retractListener(Consumer<RetractInfo> retractListener) {
+            this.retractListener = retractListener;
             return this;
         }
 

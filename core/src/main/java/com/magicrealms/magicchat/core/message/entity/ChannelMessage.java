@@ -49,7 +49,7 @@ public class ChannelMessage extends AbstractMessage {
         Player player = Bukkit.getPlayer(sender);
         if (player == null) { return content; }
         return MagicChat.getInstance()
-                .getFormatManager().format(player, content);
+                .getFormatManager().format(player, content, getMessageId());
     }
 
 }

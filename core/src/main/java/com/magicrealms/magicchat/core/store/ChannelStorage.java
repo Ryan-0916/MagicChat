@@ -2,6 +2,7 @@ package com.magicrealms.magicchat.core.store;
 
 import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
 import com.magicrealms.magicchat.core.channel.entity.Channel;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,6 +45,7 @@ public class ChannelStorage {
      * @param name 频道唯一名称
      * @return 返回已注册或新创建的频道对象
      */
+    @NotNull
     public AbstractChannel retrieveChannel(String name) {
         String channelName = name.toUpperCase();
         if (channels.containsKey(channelName)) {

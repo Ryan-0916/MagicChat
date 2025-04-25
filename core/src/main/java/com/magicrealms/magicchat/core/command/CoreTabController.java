@@ -1,5 +1,6 @@
 package com.magicrealms.magicchat.core.command;
 
+import com.magicrealms.magiclib.common.command.annotations.CommandListener;
 import com.magicrealms.magiclib.common.command.annotations.TabComplete;
 import com.magicrealms.magiclib.common.command.enums.PermissionType;
 import org.apache.commons.lang3.StringUtils;
@@ -15,6 +16,7 @@ import java.util.stream.Stream;
  * @Desc 核心部分命令补全
  * @date 2025-04-25
  */
+@CommandListener
 @SuppressWarnings("unused")
 public class CoreTabController {
 
