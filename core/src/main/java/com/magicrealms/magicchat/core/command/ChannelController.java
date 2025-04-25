@@ -1,4 +1,4 @@
-package com.magicrealms.magicchat.core.controller;
+package com.magicrealms.magicchat.core.command;
 
 import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
 import com.magicrealms.magicchat.core.entity.Member;

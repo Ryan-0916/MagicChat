@@ -89,7 +89,7 @@ public class FormatConfigLoader {
                 .copy(getYmlValueIfExists(path + ".Copy"))
                 .suggest(getYmlValueIfExists(path + ".Suggest"))
                 .insertion(getYmlValueIfExists(path + ".Insertion"))
-                .hover(configManager.getYmlListValue(YML_FORMAT, path + ".Hover").orElse(List.of()))
+                .hover(getYmlListValueIfExists( path + ".Hover").orElse(List.of()))
                 .command(getYmlValueIfExists(path + ".Command"))
                 .build();
     }
@@ -104,6 +104,13 @@ public class FormatConfigLoader {
     private Optional<Set<String>> getYmlSubKeyIfExists(String path) {
         if (configManager.containsYmlKey(YML_FORMAT, path)) {
             return configManager.getYmlSubKeys(YML_FORMAT, path, false);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<List<String>> getYmlListValueIfExists(String path) {
+        if (configManager.containsYmlKey(YML_FORMAT, path)) {
+            return configManager.getYmlListValue(YML_FORMAT, path);
         }
         return Optional.empty();
     }

@@ -1,7 +1,8 @@
-package com.magicrealms.magicchat.core.controller;
+package com.magicrealms.magicchat.core.command;
 
 import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magiclib.common.command.annotations.Command;
+import com.magicrealms.magiclib.common.command.annotations.CommandListener;
 import com.magicrealms.magiclib.common.command.enums.PermissionType;
 import com.magicrealms.magiclib.paper.dispatcher.MessageDispatcher;
 import org.bukkit.command.CommandSender;
@@ -12,8 +13,10 @@ import static com.magicrealms.magicchat.core.MagicChatConstant.YML_LANGUAGE;
 
 /**
  * @author Ryan-0916
+ * @Desc 核心部分命令
  * @date 2025-04-25
  */
+@CommandListener
 @SuppressWarnings("unused")
 public class CoreController {
 
