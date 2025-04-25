@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @Desc 消息缓存类
  * @date 2025-04-25
  */
+@SuppressWarnings("unused")
 public class MessageHistoryRepository<T, M> {
 
     private final Map<T, ConcurrentLinkedQueue<M>>
