@@ -1,9 +1,11 @@
-package com.magicrealms.magicchat.core.entity;
+package com.magicrealms.magicchat.core.member;
 
 import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
-import com.magicrealms.magicchat.core.enums.BlockingState;
-import com.magicrealms.magicchat.core.listener.SelectorListener;
+import com.magicrealms.magicchat.core.member.state.BlockState;
+import com.magicrealms.magicchat.core.member.state.NoneBlockState;
+import com.magicrealms.magicchat.core.member.state.SelectorBlockState;
+import com.magicrealms.magicchat.core.member.state.TypewriterBlockState;
 import com.magicrealms.magicchat.core.message.entity.AbstractMessage;
 import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
 import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
@@ -13,7 +15,6 @@ import com.magicrealms.magicchat.core.message.entity.channel.ToppingMessage;
 import com.magicrealms.magicchat.core.message.entity.exclusive.SelectorMessage;
 import com.magicrealms.magicchat.core.message.entity.exclusive.TypewriterMessage;
 import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
-import com.magicrealms.magiclib.common.message.helper.TypewriterHelper;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
 import com.magicrealms.magiclib.paper.dispatcher.NMSDispatcher;
 import it.unimi.dsi.fastutil.Pair;
@@ -21,11 +22,9 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -35,125 +34,70 @@ import static com.magicrealms.magicchat.core.MagicChatConstant.*;
 
 /**
  * @author Ryan-0916
- * @Desc 成员类
+ * @Desc 成员
  * @date 2025-04-03
  */
 @Getter
 @SuppressWarnings("unused")
 public class Member {
-
     /* 聊天频道 */
     private @NotNull AbstractChannel channel;
     /* 成员编号 */
     private final UUID memberId;
     /* 成员名称 */
     private final String memberName;
-    /* 阻塞状态 */
-    private volatile BlockingState blockingState;
-    /* 打印机所占用的线程 */
-    private volatile BukkitTask typewriterTask;
-    /* 选择器监听器 */
-    private SelectorListener selectorListener;
     /* 消息撤回模式 */
     private boolean undoMessagesMode;
+    /* 阻塞状态 */
+    private volatile BlockState blockState;
 
     public Member(Player player, @NotNull AbstractChannel channel) {
         this.memberId = player.getUniqueId();
         this.memberName = StringUtils.upperCase(player.getName());
+        this.blockState = new NoneBlockState();
         this.channel = channel;
         /* 初始化玩家频道 */
         this.channel.joinChannel(this);
     }
 
-    /* 自动开关消息撤回模式 */
-    public boolean toggleUndoMessagesMode() {
-        this.undoMessagesMode = !this.undoMessagesMode;
-        return this.undoMessagesMode;
-    }
-
-    private boolean isBlocking() {
-        return blockingState != null;
-    }
-
-    public void startBlocking(BlockingState state) {
-        this.blockingState = state;
+    private void startBlocking(BlockState state) {
+        blockState.exit(this);
+        blockState = state;
+        blockState.enter(this);
     }
 
     public void stopBlocking() {
-        this.blockingState = null;
-        /* 移除 Task */
-        if (typewriterTask != null
-                && !typewriterTask.isCancelled()) {
-            typewriterTask.cancel();
-            typewriterTask = null;
-        }
-        if (selectorListener != null) {
-            selectorListener.unregister();
-            selectorListener = null;
-        }
+        blockState.exit(this);
+        blockState = new NoneBlockState();
     }
 
     /**
-     * 重置玩家的频道
-     * 将其从当前频道移除并加入新的频道
-     * @param channel 新的频道对象
-     */
-    public void resetChannel(@NotNull AbstractChannel channel) {
-        this.channel.leaveChannel(this);
-        channel.joinChannel(this);
-        this.channel = channel;
-    }
-
-    /**
-     * 给玩家发送私有消息
+     * 将专属消息添加至玩家的聊天记录中
+     * 该方法仅对本地缓存与 Redis 缓存进行操作
+     * 不会重置玩家的聊天框
+     * 如若重置玩家聊天框请调用 {@link this#asyncResetChatDialog(String)}
      * @param message 消息内容
      */
-    public void sendMessage(ExclusiveMessage message) {
-        /* 如果是打印机消息则单独处理 */
-        if (message instanceof TypewriterMessage typewriterMessage) {
-            sendTypewriterMessage(typewriterMessage);
-            return;
-        }
-        addExclusiveMessageToMemberHistory(message);
-        resetChatDialog();
-    }
-
-    /**
-     * 将专属消息添加至玩家消息记录
-     * @param message 消息内容
-     */
-    private void addExclusiveMessageToMemberHistory(ExclusiveMessage message) {
+    public void addMessageToMemberHistory(ExclusiveMessage message) {
         message.setSentTime(System.currentTimeMillis());
         /* 将当前成员的私密消息添加到消息历史中 */
         MessageHistoryStorage.getInstance()
-                .addMessageToMember(this, message);
+                .addMessage(this, message);
         /* 同步聊天记录至 Redis 队列 */
         CompletableFuture.runAsync(() ->
                 MagicChat.getInstance().getRedisStore().rSetValue(
-                MessageFormat.format(MEMBER_MESSAGE_HISTORY, memberName),
-                MAX_HISTORY_SIZE,
-                SerializationUtils.serializeByBase64(message)
-        ));
-        /* 重置聊天对话状态，以便进行下一条消息 */
-        resetChatDialog();
+                        String.format(MEMBER_MESSAGE_HISTORY, memberName),
+                        MAX_HISTORY_SIZE,
+                        SerializationUtils.serializeByBase64(message)
+                ));
     }
 
     /**
-     * 重置玩家的聊天框
-     * 它将在获取频道中的聊天信息并与私人信息相结合
-     * 重组成新的聊天框并发包给玩家
+     * 异步重置玩家聊天框
+     * 运行在聊天框末尾加上内容
+     * @param appendContent 您需要在聊天框末尾加上的内容
      */
-    public void resetChatDialog() {
-        if (isBlocking()) {
-            if (blockingState == BlockingState.SELECTOR && selectorListener != null) {
-                asyncResetChatDialog(selectorListener.getSelector().getContent());
-            }
-            return;
-        }
-        asyncResetChatDialog(null);
-    }
-
-    private void asyncResetChatDialog(@Nullable String appendContent) {
+    public void asyncResetChatDialog(@Nullable String appendContent) {
         CompletableFuture.supplyAsync(() -> {
             Player player = Bukkit.getPlayer(memberId);
             if (player == null || !player.isOnline()) {
@@ -175,7 +119,7 @@ public class Member {
      * 重组成新的聊天记录
      * @return 新的聊天记录合集
      */
-    private List<String> getMessageHistory(Player player) {
+    public List<String> getMessageHistory(Player player) {
         /* 获取当前时间戳，用于查看消息是否在有效期内 */
         long currentTime = System.currentTimeMillis();
 
@@ -185,8 +129,10 @@ public class Member {
          * 并按时间降序 （注意这里是时间降序 越早的消息排序越后）
          */
         List<AbstractMessage> allHistory = Stream.concat(
-                        MessageHistoryStorage.getInstance().getChannelMessageHistory(this.channel).stream(),
-                        MessageHistoryStorage.getInstance().getMemberMessageHistory(this).stream())
+                        MessageHistoryStorage.getInstance()
+                                .getMessageHistory(channel).stream(),
+                        MessageHistoryStorage.getInstance()
+                                .getMessageHistory(this).stream())
                 .filter(m ->
                         /* 私有消息并且为自己可见 */
                         (m instanceof ExclusiveMessage exclusiveMessage)
@@ -234,64 +180,58 @@ public class Member {
                 .collect(Collectors.toList());
     }
 
+    /* 自动开关消息撤回模式 */
+    public boolean toggleUndoMessagesMode() {
+        this.undoMessagesMode = !this.undoMessagesMode;
+        return this.undoMessagesMode;
+    }
+
+    private boolean isBlocking() {
+        return !(blockState instanceof NoneBlockState);
+    }
+
     /**
-     * 聊天
-     * 该方法允许当前成员以玩家的口吻向指定的频道发送公开消息。
-     * 注意：此方法用于发送公开消息，并通过该成员所属的频道进行广播。
-     * @param message 要发送的公开消息 {@link ChannelMessage}
+     * 重置玩家的频道
+     * 将其从当前频道移除并加入新的频道
+     * @param channel 新的频道对象
      */
+    public void resetChannel(@NotNull AbstractChannel channel) {
+        this.channel.leaveChannel(this);
+        channel.joinChannel(this);
+        this.channel = channel;
+    }
+
+
+    public void sendMessage(ExclusiveMessage message) {
+        if (message instanceof TypewriterMessage typewriterMessage) {
+            sendTypewriterMessage(typewriterMessage);
+            return;
+        }
+        blockState.handleMessage(this, message);
+    }
+
+    public void sendTypewriterMessage(TypewriterMessage message) {
+        if (isBlocking()) {
+            blockState.handleMessage(this, message);
+            return;
+        }
+        startBlocking(new TypewriterBlockState(message));
+    }
+
+    public void sendSelectorMessage(SelectorMessage message) {
+        if (isBlocking()) return;
+        startBlocking(new SelectorBlockState(message));
+        resetChatDialog();
+    }
+
+    public void resetChatDialog() {
+        blockState.resetChatDialog(this, null);
+    }
+
     public void chat(ChannelMessage message) {
         message.setSentTime(System.currentTimeMillis());
         /* 将消息发送到成员所在的频道 */
         this.channel.sendMessage(message);
     }
 
-    public void stopTypewriterEvent(TypewriterMessage message) {
-        /* 关闭阻塞模式 */
-        stopBlocking();
-        if (message instanceof SelectorMessage selectorMessage) {
-            sendSelectorMessage(selectorMessage);
-        } else {
-            /* 将当前成员的私密消息添加到消息历史中 */
-            addExclusiveMessageToMemberHistory(message);
-        }
-    }
-
-    private void sendSelectorMessage(SelectorMessage message) {
-        if (isBlocking()) { return; }
-        selectorListener = new SelectorListener(this, message);
-        startBlocking(BlockingState.SELECTOR);
-        resetChatDialog();
-        Bukkit.getPluginManager()
-                .registerEvents(selectorListener, MagicChat.getInstance());
-    }
-
-    private void sendTypewriterMessage(TypewriterMessage message) {
-        /* 如果正在阻塞将不会进行打印机效果 */
-        if (isBlocking()) {
-            if (!(message instanceof SelectorMessage selectorMessage)) {
-                addExclusiveMessageToMemberHistory(message);
-            }
-            return;
-        }
-        startBlocking(BlockingState.TYPEWRITER);
-        TypewriterHelper typewriterHelper = new TypewriterHelper(
-                message.getPrintContent(),
-                message.getPrefix(),
-                message instanceof SelectorMessage selectorMessage ? "\n".repeat(selectorMessage.getOptions().size()) + message.getSuffix() :
-                        message.getSuffix()
-        );
-        typewriterTask = Bukkit.getScheduler().runTaskTimer(MagicChat.getInstance(), () -> {
-            Player player = Bukkit.getPlayer(memberId);
-            /* 如果玩家已经离线或打印完整个消息，则关闭计时器任务 */
-            if (player == null || !player.isOnline() || typewriterHelper.isPrinted()) {
-                stopTypewriterEvent(message);
-                return;
-            }
-            String m = typewriterHelper.print();
-            List<String> history = getMessageHistory(player);
-            history.add(m);
-            NMSDispatcher.getInstance().resetChatDialog(player, history);
-        }, 0, message.getPrintTick() / (typewriterHelper.getRealContent().length() - 1));
-    }
 }

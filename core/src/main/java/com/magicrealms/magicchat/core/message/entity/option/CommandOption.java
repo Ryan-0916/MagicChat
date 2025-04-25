@@ -1,7 +1,7 @@
 package com.magicrealms.magicchat.core.message.entity.option;
 
 import com.magicrealms.magicchat.core.MagicChat;
-import com.magicrealms.magicchat.core.entity.Member;
+import com.magicrealms.magicchat.core.member.Member;
 import com.magicrealms.magiclib.common.command.records.ExecutableCommand;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;

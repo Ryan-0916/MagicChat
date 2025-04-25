@@ -1,6 +1,6 @@
 package com.magicrealms.magicchat.core.channel.entity;
 
-import com.magicrealms.magicchat.core.entity.Member;
+import com.magicrealms.magicchat.core.member.Member;
 import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;

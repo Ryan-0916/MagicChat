@@ -1,6 +1,6 @@
 package com.magicrealms.magicchat.core.message.builder;
 
-import com.magicrealms.magicchat.core.entity.Member;
+import com.magicrealms.magicchat.core.member.Member;
 import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
 import com.magicrealms.magicchat.core.message.entity.option.AbstractOption;
 import com.magicrealms.magicchat.core.message.entity.option.CommandOption;

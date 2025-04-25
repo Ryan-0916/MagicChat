@@ -1,6 +1,6 @@
 package com.magicrealms.magicchat.core.message.entity.exclusive;
 
-import com.magicrealms.magicchat.core.entity.Member;
+import com.magicrealms.magicchat.core.member.Member;
 import com.magicrealms.magicchat.core.message.entity.option.AbstractOption;
 import com.magicrealms.magiclib.common.message.helper.AdventureHelper;
 import lombok.Getter;

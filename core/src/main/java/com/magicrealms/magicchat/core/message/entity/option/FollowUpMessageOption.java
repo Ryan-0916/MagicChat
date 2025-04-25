@@ -1,6 +1,6 @@
 package com.magicrealms.magicchat.core.message.entity.option;
 
-import com.magicrealms.magicchat.core.entity.Member;
+import com.magicrealms.magicchat.core.member.Member;
 import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
 import org.jetbrains.annotations.NotNull;
 

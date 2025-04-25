@@ -8,7 +8,7 @@ import com.github.retrooper.packetevents.protocol.PacketSide;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientChatMessage;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSystemChatMessage;
-import com.magicrealms.magicchat.core.entity.Member;
+import com.magicrealms.magicchat.core.member.Member;
 import com.magicrealms.magicchat.core.message.builder.MessageBuilder;
 import com.magicrealms.magicchat.core.message.entity.AbstractMessage;
 import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
@@ -90,7 +90,7 @@ public class ChatListener implements Listener {
         AbstractMessage message = new MessageBuilder(null, msg
         ).build(MessageType.EXCLUSIVE);
         Member member = MemberStorage.getInstance().retrieveMember(event.getPlayer());
-        MessageHistoryStorage.getInstance().addMessageToMember(member, (ExclusiveMessage) message);
+        MessageHistoryStorage.getInstance().addMessage(member, (ExclusiveMessage) message);
     }
 
 }

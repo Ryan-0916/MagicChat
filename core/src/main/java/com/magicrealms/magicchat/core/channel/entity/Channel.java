@@ -3,7 +3,7 @@ package com.magicrealms.magicchat.core.channel.entity;
 import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magicchat.core.bungee.BungeeMessage;
 import com.magicrealms.magicchat.core.bungee.RetractInfo;
-import com.magicrealms.magicchat.core.entity.Member;
+import com.magicrealms.magicchat.core.member.Member;
 import com.magicrealms.magicchat.core.bungee.BungeeChannelMessageManager;
 import com.magicrealms.magicchat.core.message.entity.AbstractMessage;
 import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
@@ -13,7 +13,6 @@ import com.magicrealms.magiclib.common.utils.JsonUtil;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -45,11 +44,11 @@ public class Channel extends AbstractChannel{
         String base64Message = SerializationUtils.serializeByBase64(message);
 
         /* 发送通知推送 */
-        MagicChat.getInstance().getRedisStore().publishValue(MessageFormat.format(BUNGEE_CHANNEL_CHAT,
+        MagicChat.getInstance().getRedisStore().publishValue(String.format(BUNGEE_CHANNEL_CHAT,
                 channelName), JsonUtil.objectToJson(BungeeMessage.ofSend(base64Message)));
         /* 同步聊天记录至 Redis 队列 */
         CompletableFuture.runAsync(() ->
-                MagicChat.getInstance().getRedisStore().rSetValue(MessageFormat.format(CHANNEL_MESSAGE_HISTORY,
+                MagicChat.getInstance().getRedisStore().rSetValue(String.format(CHANNEL_MESSAGE_HISTORY,
                         channelName), MAX_HISTORY_SIZE, base64Message)
         );
     }
@@ -75,7 +74,7 @@ public class Channel extends AbstractChannel{
         int port = plugin.getConfigManager().getYmlValue(YML_REDIS, "DataSource.Port", 6379, ParseType.INTEGER);
         boolean redisPasswordModel = plugin.getConfigManager().getYmlValue(YML_REDIS, "DataSource.PasswordModel", false, ParseType.BOOLEAN);
         bungeeChannelMessageManager = new BungeeChannelMessageManager.Builder().channel(
-                        MessageFormat.format(BUNGEE_CHANNEL_CHAT,
+                        String.format(BUNGEE_CHANNEL_CHAT,
                                 channelName))
                 .plugin(plugin)
                 .host(host)
@@ -84,7 +83,7 @@ public class Channel extends AbstractChannel{
                 .password(password)
                 .sendListener(message -> {
                     /* 捕获通知推送 尝试将消息添加至聊天记录中 */
-                    MessageHistoryStorage.getInstance().addMessageToChannel(this, message);
+                    MessageHistoryStorage.getInstance().addMessage(this, message);
                     /* 重置每个人的聊天框 */
                     for (Member member : members) {
                         member.resetChatDialog();
@@ -109,7 +108,7 @@ public class Channel extends AbstractChannel{
     /* 撤回消息 */
     public void retractMessage(UUID messageId, UUID receiverBy) {
         /* 回收本地缓存消息 */
-        MagicChat.getInstance().getRedisStore().publishValue(MessageFormat.format(BUNGEE_CHANNEL_CHAT,
+        MagicChat.getInstance().getRedisStore().publishValue(String.format(BUNGEE_CHANNEL_CHAT,
                 channelName), JsonUtil.objectToJson(BungeeMessage.ofRetract(RetractInfo.of(messageId, receiverBy))));
         /* 回收 Redis 队列中的消息 */
         CompletableFuture.runAsync(() ->
@@ -117,7 +116,7 @@ public class Channel extends AbstractChannel{
             /* TODO: 加锁 不推荐使用，推荐使用从队列中移除并新增，可能出现线程安全问题 */
             /* 获取队列中的全部消息 */
             Optional<List<String>> history = MagicChat.getInstance().getRedisStore()
-                    .getAllValue(MessageFormat.format(CHANNEL_MESSAGE_HISTORY, channelName));
+                    .getAllValue(String.format(CHANNEL_MESSAGE_HISTORY, channelName));
             if (history.isEmpty()) {
                 return;
             }
@@ -134,7 +133,7 @@ public class Channel extends AbstractChannel{
                     .map(SerializationUtils::serializeByBase64)
                     .toArray(String[]::new);
             MagicChat.getInstance().getRedisStore().rSetValue(
-                    MessageFormat.format(CHANNEL_MESSAGE_HISTORY, channelName),
+                    String.format(CHANNEL_MESSAGE_HISTORY, channelName),
                     MAX_HISTORY_SIZE,
                     serializedMessages
             );

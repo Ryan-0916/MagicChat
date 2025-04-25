@@ -3,7 +3,7 @@ package com.magicrealms.magicchat.core.command;
 import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
 import com.magicrealms.magicchat.core.channel.entity.Channel;
-import com.magicrealms.magicchat.core.entity.Member;
+import com.magicrealms.magicchat.core.member.Member;
 import com.magicrealms.magicchat.core.message.builder.MessageBuilder;
 import com.magicrealms.magicchat.core.message.entity.exclusive.TypewriterMessage;
 import com.magicrealms.magicchat.core.message.enums.MessageType;
@@ -39,9 +39,12 @@ public class ChannelController {
     @Command(text = "^test$", permissionType = PermissionType.PLAYER)
     public void test(Player sender, String[] args) {
         Member member = MemberStorage.getInstance().retrieveMember(sender);
-        TypewriterMessage message = (TypewriterMessage) new MessageBuilder(sender.getUniqueId(), "再见了妈妈今晚我就要远航，我是大傻逼，我是一个大大的傻逼，我是一个大大大大大大大大傻逼")
-                .setPrefix("刘一鸣:")
-                .setPrintTick(6 * 20)
+        TypewriterMessage message = (TypewriterMessage) new MessageBuilder(sender.getUniqueId(), "“啊，一位新朋友！愿知识之光照亮你的道路。我是莱恩，一名追寻古老传说的旅行学者。也许你曾在北境的雪原听过我的名字，或是在南方的图书馆瞥见我的笔记——毕竟，这个世界的故事太多，而我的脚步从未停歇。" +
+                "我的背包里总装着几本破旧的书（其中一本可能正在砸到我的后脑勺），还有总也喝不完的咖啡——别问为什么它永远是热的，这是个连我自己都解不开的谜题。" +
+                "如果你好奇，我可以告诉你精灵族的诗歌如何预言了星辰的陨落，或者矮人工匠为何痴迷于给门把手雕花纹。当然，偶尔我也会接些‘小委托’：比如帮村民解读神秘符号，或是用半吊子的魔法替人找猫……（上次的猫其实一直蹲在委托人头上。）" +
+                "需要建议吗？我的格言是：‘答案或许在下一座山的背面，但路上记得带够干粮。’——要一起走走看吗？”")
+                .setPrefix("旅行学者·莱恩: ")
+                .setPrintTick(15 * 20)
                 .build(MessageType.TYPEWRITER);
         member.sendMessage(message);
     }

@@ -26,11 +26,11 @@ public class MagicChatConstant {
     /* 成员频道 */
     public static final String MEMBERS_CHANNEL = "MAGIC_CHAT_MEMBERS_CHANNEL";
     /* 成员聊天记录 */
-    public static final String MEMBER_MESSAGE_HISTORY = "MAGIC_CHAT_MEMBER_MESSAGE_HISTORY_{0}";
+    public static final String MEMBER_MESSAGE_HISTORY = "MAGIC_CHAT_MEMBER_MESSAGE_HISTORY_%s";
     /* 频道聊天记录 */
-    public static final String CHANNEL_MESSAGE_HISTORY = "MAGIC_CHAT_CHANNEL_MESSAGE_HISTORY_{0}";
+    public static final String CHANNEL_MESSAGE_HISTORY = "MAGIC_CHAT_CHANNEL_MESSAGE_HISTORY_%s";
     /* 频道专属发布/订阅 KEY */
-    public static final String BUNGEE_CHANNEL_CHAT = "MAGIC_CHAT_BUNGEE_CHANNEL_{0}";
+    public static final String BUNGEE_CHANNEL_CHAT = "MAGIC_CHAT_BUNGEE_CHANNEL_%s";
     /* MAGIC_LIB_DIALOG 文本 */
     public static final String DIALOG_PATH = "MAGIC_LIB_DIALOG";
 }
