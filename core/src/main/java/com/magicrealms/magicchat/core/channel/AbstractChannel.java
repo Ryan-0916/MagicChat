@@ -24,9 +24,10 @@ public abstract class AbstractChannel {
      * 发送消息
      * 该方法是一个抽象方法，具体的发送消息操作由子类实现。
      * 子类需要定义如何实际将消息发送到目标频道或接收方。
+     * @param sender 发送者
      * @param message 要发送的公共消息 {@link ChannelMessage}
      */
-    public abstract void sendMessage(ChannelMessage message);
+    public abstract void sendMessage(Member sender, ChannelMessage message);
 
     /**
      * 加入频道

@@ -40,16 +40,26 @@ public class Channel extends AbstractChannel{
     }
 
     @Override
-    public void sendMessage(ChannelMessage message) {
+    public void sendMessage(Member sender, ChannelMessage message) {
         String base64Message = SerializationUtils.serializeByBase64(message);
 
         /* 发送通知推送 */
         MagicChat.getInstance().getRedisStore().publishValue(String.format(BUNGEE_CHANNEL_CHAT,
                 channelName), GsonUtil.objectToJson(BungeeMessage.ofSend(base64Message)));
         /* 同步聊天记录至 Redis 队列 */
-        CompletableFuture.runAsync(() ->
-                MagicChat.getInstance().getRedisStore().rSetValue(String.format(CHANNEL_MESSAGE_HISTORY,
-                        channelName), MAX_HISTORY_SIZE, base64Message)
+        CompletableFuture.runAsync(() -> {
+                    /* 记录日志 */
+                    MagicChat.getInstance().getLoggerManager().info(
+                            MagicChat.getInstance().getConfigManager()
+                                    .getYmlValue(YML_CONFIG, "Model.Log.Chat"),
+                            this.channelName,
+                            sender.getMemberName(),
+                            message.getOriginalContent()
+                    );
+                    /* 同步消息 */
+                    MagicChat.getInstance().getRedisStore().rSetValue(String.format(CHANNEL_MESSAGE_HISTORY,
+                            channelName), MAX_HISTORY_SIZE, base64Message);
+                }
         );
     }
 

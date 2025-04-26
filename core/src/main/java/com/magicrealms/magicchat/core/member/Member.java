@@ -53,7 +53,7 @@ public class Member {
 
     public Member(Player player, @NotNull AbstractChannel channel) {
         this.memberId = player.getUniqueId();
-        this.memberName = StringUtils.upperCase(player.getName());
+        this.memberName = player.getName();
         this.blockState = new NoneBlockState();
         this.channel = channel;
         /* 初始化玩家频道 */
@@ -229,14 +229,9 @@ public class Member {
     }
 
     public void chat(ChannelMessage message) {
-
-        MagicChat.getInstance().getLoggerManager().info(
-                message.getOriginalContent()
-        );
-
         message.setSentTime(System.currentTimeMillis());
         /* 将消息发送到成员所在的频道 */
-        this.channel.sendMessage(message);
+        this.channel.sendMessage(this, message);
     }
 
 }

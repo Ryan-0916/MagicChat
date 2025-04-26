@@ -4,3 +4,6 @@ DefaultChannel: "默认频道"
 Model:
   Retract:
     Enable: true
+  Log:
+    # 普通聊天 [频道] 玩家 : 消息
+    Chat: "[%s] %s : %s"
