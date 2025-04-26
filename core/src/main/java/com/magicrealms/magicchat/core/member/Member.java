@@ -229,6 +229,11 @@ public class Member {
     }
 
     public void chat(ChannelMessage message) {
+
+        MagicChat.getInstance().getLoggerManager().info(
+                message.getOriginalContent()
+        );
+
         message.setSentTime(System.currentTimeMillis());
         /* 将消息发送到成员所在的频道 */
         this.channel.sendMessage(message);

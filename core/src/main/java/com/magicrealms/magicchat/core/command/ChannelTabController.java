@@ -23,7 +23,7 @@ public class ChannelTabController {
             permissionType = PermissionType.PERMISSION,
             permission = "magic.command.magicchat.all||magic.command.magicchat.retract")
     public List<String> first(CommandSender sender, String[] args) {
-        return Stream.of("retract")
+        return Stream.of("toggleundo")
                 .collect(Collectors.toList());
     }
 
@@ -31,7 +31,7 @@ public class ChannelTabController {
             permissionType = PermissionType.PERMISSION,
             permission = "magic.command.magicchat.all||magic.command.magicchat.retract")
     public List<String> firstTab(CommandSender sender, String[] args) {
-        return Stream.of("retract")
+        return Stream.of("toggleundo")
                 .filter(e ->
                         StringUtils.startsWithIgnoreCase(e, args[0]))
                 .collect(Collectors.toList());

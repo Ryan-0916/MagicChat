@@ -2,7 +2,7 @@ package com.magicrealms.magicchat.core.bungee;
 
 import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magicchat.core.message.ChannelMessage;
-import com.magicrealms.magiclib.common.utils.JsonUtil;
+import com.magicrealms.magiclib.common.utils.GsonUtil;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
 import org.bukkit.Bukkit;
 import redis.clients.jedis.Jedis;
@@ -92,7 +92,7 @@ public class BungeeChannelMessageManager extends JedisPubSub {
     @Override
     public void onMessage(String channel, String message) {
         /* 取得订阅的消息后的处理 */
-        BungeeMessage bm = JsonUtil.jsonToObject(message, BungeeMessage.class);
+        BungeeMessage bm = GsonUtil.jsonToObject(message, BungeeMessage.class);
         if (bm == null) {
             return;
         }

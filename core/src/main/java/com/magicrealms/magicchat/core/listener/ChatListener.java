@@ -49,10 +49,13 @@ public class ChatListener implements Listener {
     public void onChat(PacketReceiveEvent event) {
         if (event.isCancelled()) return;
         /* 添加聊天记录 */
-        Member member = MemberStorage.getInstance().retrieveMember(event.getPlayer());
+        Member member = MemberStorage.getInstance()
+                .retrieveMember(event.getPlayer());
         WrapperPlayClientChatMessage chatMessage =
                 new WrapperPlayClientChatMessage(event);
-        AbstractMessage message = new MessageBuilder(event.getUser().getUUID(),
+        AbstractMessage message = new MessageBuilder(event
+                .getUser()
+                .getUUID(),
                 chatMessage.getMessage())
                 .build(MessageType.CHANNEL);
         member.chat((ChannelMessage) message);

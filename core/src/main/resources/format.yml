@@ -33,11 +33,7 @@ Format:
         Copy: "Hello World"
     Message:
       Prefix: "&F"
-      Hover:
-        - "======================"
-        - "点击执行指令 Seed"
-        - "======================"
-      Command: "seed"
+      Command: "magicchat retract %message_id%"
     Suffix:
       N1:
         Text: "[后缀]"

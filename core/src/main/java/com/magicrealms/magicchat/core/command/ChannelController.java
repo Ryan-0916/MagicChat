@@ -15,6 +15,7 @@ import com.magicrealms.magiclib.common.command.annotations.Command;
 import com.magicrealms.magiclib.common.command.annotations.CommandListener;
 import com.magicrealms.magiclib.common.command.enums.PermissionType;
 import com.magicrealms.magiclib.common.command.records.ExecutableCommand;
+import com.magicrealms.magiclib.common.enums.ParseType;
 import com.magicrealms.magiclib.paper.dispatcher.MessageDispatcher;
 import org.bukkit.entity.Player;
 
@@ -22,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static com.magicrealms.magicchat.core.MagicChatConstant.YML_CONFIG;
 import static com.magicrealms.magicchat.core.MagicChatConstant.YML_LANGUAGE;
 
 /**
@@ -55,9 +57,13 @@ public class ChannelController {
         member.sendMessage(message);
     }
 
-    @Command(text = "^ToggleUndo$", permissionType = PermissionType.PERMISSION,
+    @Command(text = "^ToggleUndo", permissionType = PermissionType.PERMISSION,
             permission = "magic.command.magicchat.all||magic.command.magicchat.retract")
     public void toggleUndo(Player sender, String[] args) {
+        if (!MagicChat.getInstance().getConfigManager().getYmlValue(YML_CONFIG
+                , "Model.Retract.Enable", false, ParseType.BOOLEAN)) {
+            return;
+        }
         Member member = MemberStorage.getInstance().retrieveMember(sender);
         MessageDispatcher.getInstance().sendMessage(MagicChat.getInstance(),
                 sender, String.format(MagicChat.getInstance().getConfigManager().getYmlValue(
@@ -67,10 +73,13 @@ public class ChannelController {
 
     @Command(text = "^Retract\\s\\S+$", permissionType = PermissionType.PLAYER)
     public void RetractMessage(Player sender, String[] args) {
-        System.out.println("尝试撤回消息" + args[1]);
         if (!sender.hasPermission("magic.command.magicchat.all")
                 && !sender.hasPermission("magic.command.magicchat.retract")
         ) {
+            return;
+        }
+        if (!MagicChat.getInstance().getConfigManager().getYmlValue(YML_CONFIG
+                , "Model.Retract.Enable", false, ParseType.BOOLEAN)) {
             return;
         }
         Member member = MemberStorage.getInstance().retrieveMember(sender);

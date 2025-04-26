@@ -9,7 +9,7 @@ import com.magicrealms.magicchat.core.message.AbstractMessage;
 import com.magicrealms.magicchat.core.message.ChannelMessage;
 import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
 import com.magicrealms.magiclib.common.enums.ParseType;
-import com.magicrealms.magiclib.common.utils.JsonUtil;
+import com.magicrealms.magiclib.common.utils.GsonUtil;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,7 +45,7 @@ public class Channel extends AbstractChannel{
 
         /* 发送通知推送 */
         MagicChat.getInstance().getRedisStore().publishValue(String.format(BUNGEE_CHANNEL_CHAT,
-                channelName), JsonUtil.objectToJson(BungeeMessage.ofSend(base64Message)));
+                channelName), GsonUtil.objectToJson(BungeeMessage.ofSend(base64Message)));
         /* 同步聊天记录至 Redis 队列 */
         CompletableFuture.runAsync(() ->
                 MagicChat.getInstance().getRedisStore().rSetValue(String.format(CHANNEL_MESSAGE_HISTORY,
@@ -109,7 +109,7 @@ public class Channel extends AbstractChannel{
     public void retractMessage(UUID messageId, UUID receiverBy) {
         /* 回收本地缓存消息 */
         MagicChat.getInstance().getRedisStore().publishValue(String.format(BUNGEE_CHANNEL_CHAT,
-                channelName), JsonUtil.objectToJson(BungeeMessage.ofRetract(RetractInfo.of(messageId, receiverBy))));
+                channelName), GsonUtil.objectToJson(BungeeMessage.ofRetract(RetractInfo.of(messageId, receiverBy))));
         /* 回收 Redis 队列中的消息 */
         CompletableFuture.runAsync(() ->
         {
