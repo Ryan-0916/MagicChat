@@ -92,7 +92,7 @@ public class BungeeChannelMessageManager extends JedisPubSub {
     @Override
     public void onMessage(String channel, String message) {
         /* 取得订阅的消息后的处理 */
-        BungeeMessage bm = GsonUtil.jsonToObject(message, BungeeMessage.class);
+        BungeeMessage bm = GsonUtil.fromJson(message, BungeeMessage.class);
         if (bm == null) {
             return;
         }

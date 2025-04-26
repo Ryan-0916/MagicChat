@@ -1,7 +1,8 @@
 name: MagicChat
-version: 1.0
+version: ${projectVersion}
 main: com.magicrealms.magicchat.core.MagicChat
 api-version: 1.21
+author: Ryan0916
 commands:
   MagicChat:
     description: '魔法领域-聊天'

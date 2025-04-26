@@ -5,8 +5,9 @@ import com.magicrealms.magicchat.core.member.Member;
 import com.magicrealms.magicchat.core.message.ExclusiveMessage;
 import com.magicrealms.magicchat.core.message.exclusive.SelectorMessage;
 import com.magicrealms.magicchat.core.message.exclusive.TypewriterMessage;
-import com.magicrealms.magiclib.common.message.helper.TypewriterHelper;
-import com.magicrealms.magiclib.paper.dispatcher.NMSDispatcher;
+import com.magicrealms.magiclib.bukkit.message.helper.TypewriterHelper;
+import com.magicrealms.magiclib.core.dispatcher.NMSDispatcher;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
@@ -36,7 +37,8 @@ public class TypewriterBlockState implements BlockState {
                 message.getPrintContent(),
                 message.getPrefix(),
                 message instanceof SelectorMessage selectorMessage ?
-                        "\n".repeat(selectorMessage.getOptions().size()) + message.getSuffix() :
+                        "\n".repeat(selectorMessage.getOptions().size())
+                                + StringUtils.defaultString(message.getSuffix()) :
                         message.getSuffix()
         );
         typewriterTask = Bukkit.getScheduler()

@@ -1,6 +1,6 @@
 package com.magicrealms.magicchat.core.message;
 
-import com.magicrealms.magiclib.common.message.helper.AdventureHelper;
+import com.magicrealms.magiclib.bukkit.message.helper.AdventureHelper;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.minimessage.MiniMessage;

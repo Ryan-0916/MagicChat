@@ -12,10 +12,12 @@ subprojects {
     apply(plugin = "com.gradleup.shadow")
 
     dependencies {
-        compileOnly("org.projectlombok:lombok:1.18.24")
-        annotationProcessor("org.projectlombok:lombok:1.18.24")
-        testAnnotationProcessor("org.projectlombok:lombok:1.18.24")
-        testCompileOnly("org.projectlombok:lombok:1.18.24")
+        compileOnly("org.projectlombok:lombok:1.18.30")
+        annotationProcessor("org.projectlombok:lombok:1.18.30")
+        testAnnotationProcessor("org.projectlombok:lombok:1.18.30")
+        testCompileOnly("org.projectlombok:lombok:1.18.30")
+
+        compileOnly("com.magicrealms:magiclib:1.0")
     }
 
     repositories {
@@ -33,13 +35,22 @@ subprojects {
     }
 
     // val target = file("$rootDir/target")
-    val target = file("D:\\Minecraft\\Servers\\1.21.4\\plugins")
+    val target = file("D:\\Minecraft\\Servers\\1.21.4\\Lobby\\plugins")
 
     if ("core" == project.name) {
         tasks.shadowJar {
             destinationDirectory.set(target)
             archiveClassifier.set("")
             archiveFileName.set("${rootProject.name}-${projectVersion}.jar")
+        }
+    }
+
+    tasks.processResources {
+        filteringCharset = "UTF-8"
+        filesMatching(arrayListOf("plugin.yml")) {
+            expand(
+                Pair("projectVersion", rootProject.properties["projectVersion"]),
+            )
         }
     }
 }

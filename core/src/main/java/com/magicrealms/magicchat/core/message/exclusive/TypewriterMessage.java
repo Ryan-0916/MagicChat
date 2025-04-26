@@ -1,7 +1,7 @@
 package com.magicrealms.magicchat.core.message.exclusive;
 
 import com.magicrealms.magicchat.core.message.ExclusiveMessage;
-import com.magicrealms.magiclib.common.message.helper.AdventureHelper;
+import com.magicrealms.magiclib.bukkit.message.helper.AdventureHelper;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;

@@ -16,7 +16,7 @@ import com.magicrealms.magicchat.core.message.exclusive.SelectorMessage;
 import com.magicrealms.magicchat.core.message.exclusive.TypewriterMessage;
 import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
-import com.magicrealms.magiclib.paper.dispatcher.NMSDispatcher;
+import com.magicrealms.magiclib.core.dispatcher.NMSDispatcher;
 import it.unimi.dsi.fastutil.Pair;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;

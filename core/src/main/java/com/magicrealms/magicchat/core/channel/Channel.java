@@ -45,7 +45,7 @@ public class Channel extends AbstractChannel{
 
         /* 发送通知推送 */
         MagicChat.getInstance().getRedisStore().publishValue(String.format(BUNGEE_CHANNEL_CHAT,
-                channelName), GsonUtil.objectToJson(BungeeMessage.ofSend(base64Message)));
+                channelName), GsonUtil.toJson(BungeeMessage.ofSend(base64Message)));
         /* 同步聊天记录至 Redis 队列 */
         CompletableFuture.runAsync(() -> {
                     /* 记录日志 TODO 未来将这一块挪至 Velocity 日志管理 */
@@ -119,7 +119,7 @@ public class Channel extends AbstractChannel{
     public void retractMessage(UUID messageId, UUID receiverBy) {
         /* 回收本地缓存消息 */
         MagicChat.getInstance().getRedisStore().publishValue(String.format(BUNGEE_CHANNEL_CHAT,
-                channelName), GsonUtil.objectToJson(BungeeMessage.ofRetract(RetractInfo.of(messageId, receiverBy))));
+                channelName), GsonUtil.toJson(BungeeMessage.ofRetract(RetractInfo.of(messageId, receiverBy))));
         /* 回收 Redis 队列中的消息 */
         CompletableFuture.runAsync(() ->
         {

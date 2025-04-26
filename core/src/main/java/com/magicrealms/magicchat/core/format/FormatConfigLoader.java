@@ -7,7 +7,7 @@ import com.magicrealms.magicchat.core.format.entity.FormatMessage;
 import com.magicrealms.magicchat.core.format.entity.MessageFormatConfig;
 import com.magicrealms.magicchat.core.format.enums.FormatRole;
 import com.magicrealms.magiclib.common.enums.ParseType;
-import com.magicrealms.magiclib.common.manage.ConfigManager;
+import com.magicrealms.magiclib.bukkit.manage.ConfigManager;
 import com.magicrealms.magiclib.common.utils.EnumUtil;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;

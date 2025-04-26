@@ -6,7 +6,7 @@ import com.magicrealms.magicchat.core.message.option.AbstractOption;
 import com.magicrealms.magicchat.core.message.option.CommandOption;
 import com.magicrealms.magicchat.core.message.option.FollowUpMessageOption;
 import com.magicrealms.magicchat.core.message.enums.OptionType;
-import com.magicrealms.magiclib.common.command.records.ExecutableCommand;
+import com.magicrealms.magiclib.bukkit.command.records.ExecutableCommand;
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.function.Function;

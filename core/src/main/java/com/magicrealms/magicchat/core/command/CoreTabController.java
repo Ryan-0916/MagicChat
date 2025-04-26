@@ -1,8 +1,8 @@
 package com.magicrealms.magicchat.core.command;
 
-import com.magicrealms.magiclib.common.command.annotations.CommandListener;
-import com.magicrealms.magiclib.common.command.annotations.TabComplete;
-import com.magicrealms.magiclib.common.command.enums.PermissionType;
+import com.magicrealms.magiclib.bukkit.command.annotations.CommandListener;
+import com.magicrealms.magiclib.bukkit.command.annotations.TabComplete;
+import com.magicrealms.magiclib.bukkit.command.enums.PermissionType;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.command.CommandSender;
 

@@ -1,10 +1,10 @@
 package com.magicrealms.magicchat.core.command;
 
 import com.magicrealms.magicchat.core.MagicChat;
-import com.magicrealms.magiclib.common.command.annotations.Command;
-import com.magicrealms.magiclib.common.command.annotations.CommandListener;
-import com.magicrealms.magiclib.common.command.enums.PermissionType;
-import com.magicrealms.magiclib.paper.dispatcher.MessageDispatcher;
+import com.magicrealms.magiclib.bukkit.command.annotations.Command;
+import com.magicrealms.magiclib.bukkit.command.annotations.CommandListener;
+import com.magicrealms.magiclib.bukkit.command.enums.PermissionType;
+import com.magicrealms.magiclib.core.dispatcher.MessageDispatcher;
 import org.bukkit.command.CommandSender;
 
 import java.util.Locale;

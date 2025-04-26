@@ -11,12 +11,12 @@ import com.magicrealms.magicchat.core.message.enums.MessageType;
 import com.magicrealms.magicchat.core.message.enums.OptionType;
 import com.magicrealms.magicchat.core.store.ChannelStorage;
 import com.magicrealms.magicchat.core.store.MemberStorage;
-import com.magicrealms.magiclib.common.command.annotations.Command;
-import com.magicrealms.magiclib.common.command.annotations.CommandListener;
-import com.magicrealms.magiclib.common.command.enums.PermissionType;
-import com.magicrealms.magiclib.common.command.records.ExecutableCommand;
+import com.magicrealms.magiclib.bukkit.command.annotations.Command;
+import com.magicrealms.magiclib.bukkit.command.annotations.CommandListener;
+import com.magicrealms.magiclib.bukkit.command.enums.PermissionType;
+import com.magicrealms.magiclib.bukkit.command.records.ExecutableCommand;
 import com.magicrealms.magiclib.common.enums.ParseType;
-import com.magicrealms.magiclib.paper.dispatcher.MessageDispatcher;
+import com.magicrealms.magiclib.core.dispatcher.MessageDispatcher;
 import org.bukkit.entity.Player;
 
 import java.util.Collections;
