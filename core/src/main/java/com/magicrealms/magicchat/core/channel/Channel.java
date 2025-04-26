@@ -48,7 +48,7 @@ public class Channel extends AbstractChannel{
                 channelName), GsonUtil.objectToJson(BungeeMessage.ofSend(base64Message)));
         /* 同步聊天记录至 Redis 队列 */
         CompletableFuture.runAsync(() -> {
-                    /* 记录日志 */
+                    /* 记录日志 TODO 未来将这一块挪至 Velocity 日志管理 */
                     MagicChat.getInstance().getLoggerManager().info(
                             MagicChat.getInstance().getConfigManager()
                                     .getYmlValue(YML_CONFIG, "Model.Log.Chat"),
