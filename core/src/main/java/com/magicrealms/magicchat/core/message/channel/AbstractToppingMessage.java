@@ -1,6 +1,6 @@
-package com.magicrealms.magicchat.core.message.entity.channel;
+package com.magicrealms.magicchat.core.message.channel;
 
-import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
+import com.magicrealms.magicchat.core.message.ChannelMessage;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 

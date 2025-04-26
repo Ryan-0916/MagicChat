@@ -1,10 +1,10 @@
 package com.magicrealms.magicchat.core.message.builder;
 
 import com.magicrealms.magicchat.core.member.Member;
-import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
-import com.magicrealms.magicchat.core.message.entity.option.AbstractOption;
-import com.magicrealms.magicchat.core.message.entity.option.CommandOption;
-import com.magicrealms.magicchat.core.message.entity.option.FollowUpMessageOption;
+import com.magicrealms.magicchat.core.message.ExclusiveMessage;
+import com.magicrealms.magicchat.core.message.option.AbstractOption;
+import com.magicrealms.magicchat.core.message.option.CommandOption;
+import com.magicrealms.magicchat.core.message.option.FollowUpMessageOption;
 import com.magicrealms.magicchat.core.message.enums.OptionType;
 import com.magicrealms.magiclib.common.command.records.ExecutableCommand;
 import org.jetbrains.annotations.NotNull;

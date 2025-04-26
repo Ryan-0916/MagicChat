@@ -1,7 +1,7 @@
 package com.magicrealms.magicchat.core.listener;
 
 import com.magicrealms.magicchat.core.member.Member;
-import com.magicrealms.magicchat.core.message.entity.exclusive.SelectorMessage;
+import com.magicrealms.magicchat.core.message.exclusive.SelectorMessage;
 import lombok.Getter;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;

@@ -1,7 +1,7 @@
 package com.magicrealms.magicchat.core.member.state;
 
 import com.magicrealms.magicchat.core.member.Member;
-import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
+import com.magicrealms.magicchat.core.message.ExclusiveMessage;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -16,7 +16,7 @@ public class NoneBlockState implements BlockState {
     @Override
     public void handleMessage(Member member, ExclusiveMessage message) {
         /* 添加消息至聊天记录 */
-        member.addMessageToMemberHistory(message);
+        member.addMessageHistory(message);
         resetChatDialog(member, null);
     }
 

@@ -1,7 +1,7 @@
 package com.magicrealms.magicchat.core.store;
 
-import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
-import com.magicrealms.magicchat.core.channel.entity.Channel;
+import com.magicrealms.magicchat.core.channel.AbstractChannel;
+import com.magicrealms.magicchat.core.channel.Channel;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;

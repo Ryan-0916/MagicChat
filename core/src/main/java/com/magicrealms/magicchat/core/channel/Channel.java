@@ -1,12 +1,12 @@
-package com.magicrealms.magicchat.core.channel.entity;
+package com.magicrealms.magicchat.core.channel;
 
 import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magicchat.core.bungee.BungeeMessage;
 import com.magicrealms.magicchat.core.bungee.RetractInfo;
 import com.magicrealms.magicchat.core.member.Member;
 import com.magicrealms.magicchat.core.bungee.BungeeChannelMessageManager;
-import com.magicrealms.magicchat.core.message.entity.AbstractMessage;
-import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
+import com.magicrealms.magicchat.core.message.AbstractMessage;
+import com.magicrealms.magicchat.core.message.ChannelMessage;
 import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
 import com.magicrealms.magiclib.common.enums.ParseType;
 import com.magicrealms.magiclib.common.utils.JsonUtil;

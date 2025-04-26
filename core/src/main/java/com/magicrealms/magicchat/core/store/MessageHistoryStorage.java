@@ -2,11 +2,11 @@ package com.magicrealms.magicchat.core.store;
 
 import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magicchat.core.bungee.RetractInfo;
-import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
-import com.magicrealms.magicchat.core.channel.entity.Channel;
+import com.magicrealms.magicchat.core.channel.AbstractChannel;
+import com.magicrealms.magicchat.core.channel.Channel;
 import com.magicrealms.magicchat.core.member.Member;
-import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
-import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
+import com.magicrealms.magicchat.core.message.ChannelMessage;
+import com.magicrealms.magicchat.core.message.ExclusiveMessage;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
 
 import java.util.*;
@@ -52,7 +52,7 @@ public class MessageHistoryStorage {
      * @param member 成员对象，包含成员的信息（如成员ID、成员名称等）
      */
     public void initializeHistory(Member member) {
-        this.initializeHistory(memberStorage, member.getMemberName(),
+        initializeHistory(memberStorage, member.getMemberName(),
                 String.format(MEMBER_MESSAGE_HISTORY,
                 member.getMemberName()));
     }
@@ -64,7 +64,7 @@ public class MessageHistoryStorage {
      * @param channel 频道对象，包含频道的信息（如频道名称等）
      */
     public void initializeHistory(Channel channel) {
-        this.initializeHistory(memberStorage, channel.getChannelName(),
+        initializeHistory(channelStorage, channel.getChannelName(),
                 String.format(CHANNEL_MESSAGE_HISTORY,
                         channel.getChannelName()));
     }
@@ -105,43 +105,22 @@ public class MessageHistoryStorage {
         ).collect(Collectors.toList()));
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
      * 撤回渠道消息
      * @param channel 渠道
      * @param retractInfo 渠道消息
      */
     public void retractChannelMessage(Channel channel, RetractInfo retractInfo) {
-//        if (!channelStorage.containsKey(channel.getChannelName())) {
-//            throw new NullPointerException("频道 '" + channel.getChannelName() + "' 没有初始化消息记录存储");
-//        }
-//        for (ChannelMessage msg : channelMessageHistory.get(channel.getChannelName())) {
-//            if (msg.getMessageId().equals(retractInfo.retractMessageId())) { // 假设按 messageId 查找
-//                msg.setRetracted(true);
-//                msg.setRetractedBy(retractInfo.receivedBy());
-//                break;
-//            }
-//        }
+        /* ToDo 待优化 不安全的线程问题 */
+        if (!channelStorage.containsKey(channel.getChannelName())) {
+            throw new NullPointerException("频道 '" + channel.getChannelName() + "' 没有初始化消息记录存储");
+        }
+        for (ChannelMessage msg : channelStorage.getMessages(channel.getChannelName())) {
+            if (msg.getMessageId().equals(retractInfo.retractMessageId())) { // 假设按 messageId 查找
+                msg.setRetracted(true);
+                msg.setRetractedBy(retractInfo.receivedBy());
+                break;
+            }
+        }
     }
-
-
-
-
-
-
 }

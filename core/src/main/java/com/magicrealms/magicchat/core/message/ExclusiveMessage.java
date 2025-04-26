@@ -1,4 +1,4 @@
-package com.magicrealms.magicchat.core.message.entity;
+package com.magicrealms.magicchat.core.message;
 
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;

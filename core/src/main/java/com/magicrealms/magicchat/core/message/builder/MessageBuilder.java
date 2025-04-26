@@ -1,19 +1,18 @@
 package com.magicrealms.magicchat.core.message.builder;
 
-import com.magicrealms.magicchat.core.message.entity.AbstractMessage;
-import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
-import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
-import com.magicrealms.magicchat.core.message.entity.channel.AtAllMessage;
-import com.magicrealms.magicchat.core.message.entity.channel.AtMessage;
-import com.magicrealms.magicchat.core.message.entity.channel.ToppingAllMessage;
-import com.magicrealms.magicchat.core.message.entity.channel.ToppingMessage;
-import com.magicrealms.magicchat.core.message.entity.exclusive.SelectorMessage;
-import com.magicrealms.magicchat.core.message.entity.exclusive.TypewriterMessage;
-import com.magicrealms.magicchat.core.message.entity.option.AbstractOption;
+import com.magicrealms.magicchat.core.message.AbstractMessage;
+import com.magicrealms.magicchat.core.message.ExclusiveMessage;
+import com.magicrealms.magicchat.core.message.ChannelMessage;
+import com.magicrealms.magicchat.core.message.channel.AtAllMessage;
+import com.magicrealms.magicchat.core.message.channel.AtMessage;
+import com.magicrealms.magicchat.core.message.channel.ToppingAllMessage;
+import com.magicrealms.magicchat.core.message.channel.ToppingMessage;
+import com.magicrealms.magicchat.core.message.exclusive.SelectorMessage;
+import com.magicrealms.magicchat.core.message.exclusive.TypewriterMessage;
+import com.magicrealms.magicchat.core.message.option.AbstractOption;
 import com.magicrealms.magicchat.core.message.enums.MessageType;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 

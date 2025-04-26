@@ -1,20 +1,25 @@
 package com.magicrealms.magicchat.core.command;
 
 import com.magicrealms.magicchat.core.MagicChat;
-import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
-import com.magicrealms.magicchat.core.channel.entity.Channel;
+import com.magicrealms.magicchat.core.channel.AbstractChannel;
+import com.magicrealms.magicchat.core.channel.Channel;
 import com.magicrealms.magicchat.core.member.Member;
 import com.magicrealms.magicchat.core.message.builder.MessageBuilder;
-import com.magicrealms.magicchat.core.message.entity.exclusive.TypewriterMessage;
+import com.magicrealms.magicchat.core.message.builder.OptionBuilder;
+import com.magicrealms.magicchat.core.message.exclusive.TypewriterMessage;
 import com.magicrealms.magicchat.core.message.enums.MessageType;
+import com.magicrealms.magicchat.core.message.enums.OptionType;
 import com.magicrealms.magicchat.core.store.ChannelStorage;
 import com.magicrealms.magicchat.core.store.MemberStorage;
 import com.magicrealms.magiclib.common.command.annotations.Command;
 import com.magicrealms.magiclib.common.command.annotations.CommandListener;
 import com.magicrealms.magiclib.common.command.enums.PermissionType;
+import com.magicrealms.magiclib.common.command.records.ExecutableCommand;
 import com.magicrealms.magiclib.paper.dispatcher.MessageDispatcher;
 import org.bukkit.entity.Player;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import static com.magicrealms.magicchat.core.MagicChatConstant.YML_LANGUAGE;
@@ -35,7 +40,6 @@ public class ChannelController {
         member.resetChannel(abstractChannel);
     }
 
-
     @Command(text = "^test$", permissionType = PermissionType.PLAYER)
     public void test(Player sender, String[] args) {
         Member member = MemberStorage.getInstance().retrieveMember(sender);
@@ -44,8 +48,10 @@ public class ChannelController {
                 "如果你好奇，我可以告诉你精灵族的诗歌如何预言了星辰的陨落，或者矮人工匠为何痴迷于给门把手雕花纹。当然，偶尔我也会接些‘小委托’：比如帮村民解读神秘符号，或是用半吊子的魔法替人找猫……（上次的猫其实一直蹲在委托人头上。）" +
                 "需要建议吗？我的格言是：‘答案或许在下一座山的背面，但路上记得带够干粮。’——要一起走走看吗？”")
                 .setPrefix("旅行学者·莱恩: ")
-                .setPrintTick(15 * 20)
-                .build(MessageType.TYPEWRITER);
+                .setPrintTick(5 * 20)
+                    .setOptions(List.of(new OptionBuilder("选我", ">>>选我")
+                            .setCommandFunction(e -> Collections.singletonList(ExecutableCommand.ofSelf("seed"))).build(OptionType.COMMAND)
+                            )).build(MessageType.SELECTOR);
         member.sendMessage(message);
     }
 
@@ -61,9 +67,7 @@ public class ChannelController {
 
     @Command(text = "^Retract\\s\\S+$", permissionType = PermissionType.PLAYER)
     public void RetractMessage(Player sender, String[] args) {
-
         System.out.println("尝试撤回消息" + args[1]);
-
         if (!sender.hasPermission("magic.command.magicchat.all")
                 && !sender.hasPermission("magic.command.magicchat.retract")
         ) {
@@ -73,7 +77,6 @@ public class ChannelController {
         if (!member.isUndoMessagesMode()) {
             return;
         }
-
         /* 公共频道 */
         if ((member.getChannel() instanceof Channel channel)) {
             channel.retractMessage(UUID.fromString(args[1]), sender.getUniqueId());
@@ -82,7 +85,6 @@ public class ChannelController {
                             YML_LANGUAGE, "PlayerMessage.Success.Retract")));
             return;
         }
-
         MessageDispatcher.getInstance().sendMessage(MagicChat.getInstance(),
                 sender, String.format(MagicChat.getInstance().getConfigManager().getYmlValue(
                         YML_LANGUAGE, "PlayerMessage.Error.RetractExclusiveChannel")));

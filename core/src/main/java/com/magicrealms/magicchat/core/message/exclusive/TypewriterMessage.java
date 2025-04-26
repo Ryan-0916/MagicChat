@@ -1,6 +1,6 @@
-package com.magicrealms.magicchat.core.message.entity.exclusive;
+package com.magicrealms.magicchat.core.message.exclusive;
 
-import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
+import com.magicrealms.magicchat.core.message.ExclusiveMessage;
 import com.magicrealms.magiclib.common.message.helper.AdventureHelper;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;

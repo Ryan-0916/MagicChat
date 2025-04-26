@@ -11,6 +11,8 @@ import lombok.Getter;
 @Getter
 @Builder
 public class FormatMessage {
+    /* 前缀 */
     private String prefix;
+    /* 事件 */
     private FormatEvent event;
 }

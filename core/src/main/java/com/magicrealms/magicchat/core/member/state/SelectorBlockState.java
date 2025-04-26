@@ -3,8 +3,8 @@ package com.magicrealms.magicchat.core.member.state;
 import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magicchat.core.listener.SelectorListener;
 import com.magicrealms.magicchat.core.member.Member;
-import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
-import com.magicrealms.magicchat.core.message.entity.exclusive.SelectorMessage;
+import com.magicrealms.magicchat.core.message.ExclusiveMessage;
+import com.magicrealms.magicchat.core.message.exclusive.SelectorMessage;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,7 +44,7 @@ public class SelectorBlockState implements BlockState {
     public void handleMessage(Member member, ExclusiveMessage message) {
         /* 选择器状态下消息只会添加到聊天记录中，不会重组聊天框 */
         if (!(message instanceof SelectorMessage)) {
-            member.addMessageToMemberHistory(message);
+            member.addMessageHistory(message);
         }
     }
 

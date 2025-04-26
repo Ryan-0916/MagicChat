@@ -1,4 +1,4 @@
-package com.magicrealms.magicchat.core.message.entity;
+package com.magicrealms.magicchat.core.message;
 
 import com.magicrealms.magiclib.common.message.helper.AdventureHelper;
 import lombok.Getter;

@@ -18,9 +18,8 @@ public class MessageComponentBuilder {
 
     public String buildMessageComponent(MessageFormatConfig config, String originalMsg,
                                         UUID messageUUID) {
-        originalMsg =  originalMsg.replaceAll("(</?[a-zA-Z][^>]*>)", "\\\\$1");
-
-        String eventMsg = new StringBuilder()
+        originalMsg =  originalMsg.replaceAll("(</?[a-zA-Z][^>]*>|\\\\)", "\\\\$1");
+        return StringUtil.replacePlaceholder(new StringBuilder()
                 .append(config.getMessage().getPrefix())
                 /* Message 部分 */
                 .append(decorator.decorateWithEvent(originalMsg, config.getMessage().getEvent()))
@@ -32,11 +31,7 @@ public class MessageComponentBuilder {
                 /* 后缀部分 */
                 .append(config.getSuffixes().stream()
                         .map(this::buildDecoration)
-                        .collect(Collectors.joining())).toString();
-
-        System.out.println(eventMsg);
-
-        return StringUtil.replacePlaceholder(eventMsg, "message_id", messageUUID.toString());
+                        .collect(Collectors.joining())).toString(), "message_id", messageUUID.toString());
     }
 
     private String buildDecoration(FormatDecoration decoration) {

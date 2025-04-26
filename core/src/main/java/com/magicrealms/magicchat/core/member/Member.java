@@ -1,19 +1,19 @@
 package com.magicrealms.magicchat.core.member;
 
 import com.magicrealms.magicchat.core.MagicChat;
-import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
+import com.magicrealms.magicchat.core.channel.AbstractChannel;
 import com.magicrealms.magicchat.core.member.state.BlockState;
 import com.magicrealms.magicchat.core.member.state.NoneBlockState;
 import com.magicrealms.magicchat.core.member.state.SelectorBlockState;
 import com.magicrealms.magicchat.core.member.state.TypewriterBlockState;
-import com.magicrealms.magicchat.core.message.entity.AbstractMessage;
-import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
-import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
-import com.magicrealms.magicchat.core.message.entity.channel.AbstractToppingMessage;
-import com.magicrealms.magicchat.core.message.entity.channel.ToppingAllMessage;
-import com.magicrealms.magicchat.core.message.entity.channel.ToppingMessage;
-import com.magicrealms.magicchat.core.message.entity.exclusive.SelectorMessage;
-import com.magicrealms.magicchat.core.message.entity.exclusive.TypewriterMessage;
+import com.magicrealms.magicchat.core.message.AbstractMessage;
+import com.magicrealms.magicchat.core.message.ExclusiveMessage;
+import com.magicrealms.magicchat.core.message.ChannelMessage;
+import com.magicrealms.magicchat.core.message.channel.AbstractToppingMessage;
+import com.magicrealms.magicchat.core.message.channel.ToppingAllMessage;
+import com.magicrealms.magicchat.core.message.channel.ToppingMessage;
+import com.magicrealms.magicchat.core.message.exclusive.SelectorMessage;
+import com.magicrealms.magicchat.core.message.exclusive.TypewriterMessage;
 import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
 import com.magicrealms.magiclib.paper.dispatcher.NMSDispatcher;
@@ -78,7 +78,7 @@ public class Member {
      * 如若重置玩家聊天框请调用 {@link this#asyncResetChatDialog(String)}
      * @param message 消息内容
      */
-    public void addMessageToMemberHistory(ExclusiveMessage message) {
+    public void addMessageHistory(ExclusiveMessage message) {
         message.setSentTime(System.currentTimeMillis());
         /* 将当前成员的私密消息添加到消息历史中 */
         MessageHistoryStorage.getInstance()

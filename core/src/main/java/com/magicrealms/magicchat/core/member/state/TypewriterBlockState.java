@@ -2,9 +2,9 @@ package com.magicrealms.magicchat.core.member.state;
 
 import com.magicrealms.magicchat.core.MagicChat;
 import com.magicrealms.magicchat.core.member.Member;
-import com.magicrealms.magicchat.core.message.entity.ExclusiveMessage;
-import com.magicrealms.magicchat.core.message.entity.exclusive.SelectorMessage;
-import com.magicrealms.magicchat.core.message.entity.exclusive.TypewriterMessage;
+import com.magicrealms.magicchat.core.message.ExclusiveMessage;
+import com.magicrealms.magicchat.core.message.exclusive.SelectorMessage;
+import com.magicrealms.magicchat.core.message.exclusive.TypewriterMessage;
 import com.magicrealms.magiclib.common.message.helper.TypewriterHelper;
 import com.magicrealms.magiclib.paper.dispatcher.NMSDispatcher;
 import org.bukkit.Bukkit;
@@ -48,7 +48,7 @@ public class TypewriterBlockState implements BlockState {
                 if (message instanceof SelectorMessage selectorMessage) {
                     member.sendSelectorMessage(selectorMessage);
                 } else {
-                    member.addMessageToMemberHistory(message);
+                    member.addMessageHistory(message);
                 }
                 return;
             }
@@ -70,7 +70,7 @@ public class TypewriterBlockState implements BlockState {
     public void handleMessage(Member member, ExclusiveMessage message) {
         /* 打印机状态下消息只会添加到聊天记录中，不会重组聊天框 */
         if (!(message instanceof SelectorMessage)) {
-            member.addMessageToMemberHistory(message);
+            member.addMessageHistory(message);
         }
     }
 

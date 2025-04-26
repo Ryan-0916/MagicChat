@@ -1,4 +1,4 @@
-package com.magicrealms.magicchat.core.message.entity.option;
+package com.magicrealms.magicchat.core.message.option;
 
 import com.magicrealms.magicchat.core.member.Member;
 import lombok.Getter;

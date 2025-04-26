@@ -1,7 +1,7 @@
 package com.magicrealms.magicchat.core.store;
 
 import com.magicrealms.magicchat.core.MagicChat;
-import com.magicrealms.magicchat.core.channel.entity.AbstractChannel;
+import com.magicrealms.magicchat.core.channel.AbstractChannel;
 import com.magicrealms.magicchat.core.member.Member;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;

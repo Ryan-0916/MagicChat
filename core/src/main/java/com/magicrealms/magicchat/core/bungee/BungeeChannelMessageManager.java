@@ -1,7 +1,7 @@
 package com.magicrealms.magicchat.core.bungee;
 
 import com.magicrealms.magicchat.core.MagicChat;
-import com.magicrealms.magicchat.core.message.entity.ChannelMessage;
+import com.magicrealms.magicchat.core.message.ChannelMessage;
 import com.magicrealms.magiclib.common.utils.JsonUtil;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
 import org.bukkit.Bukkit;
