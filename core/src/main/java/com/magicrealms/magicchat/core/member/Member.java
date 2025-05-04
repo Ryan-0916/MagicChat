@@ -15,6 +15,7 @@ import com.magicrealms.magicchat.core.message.channel.ToppingMessage;
 import com.magicrealms.magicchat.core.message.exclusive.SelectorMessage;
 import com.magicrealms.magicchat.core.message.exclusive.TypewriterMessage;
 import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
+import com.magicrealms.magiclib.common.utils.RedissonUtil;
 import com.magicrealms.magiclib.common.utils.SerializationUtils;
 import com.magicrealms.magiclib.core.dispatcher.NMSDispatcher;
 import it.unimi.dsi.fastutil.Pair;
@@ -75,7 +76,7 @@ public class Member {
      * 将专属消息添加至玩家的聊天记录中
      * 该方法仅对本地缓存与 Redis 缓存进行操作
      * 不会重置玩家的聊天框
-     * 如若重置玩家聊天框请调用 {@link this#asyncResetChatDialog(String)}
+     * 如若重置玩家聊天框请调用 {@link this#asyncResetChatDialog(String)} or {@link this#resetChatDialog(String))}
      * @param message 消息内容
      */
     public void addMessageHistory(ExclusiveMessage message) {
@@ -98,19 +99,41 @@ public class Member {
      * @param appendContent 您需要在聊天框末尾加上的内容
      */
     public void asyncResetChatDialog(@Nullable String appendContent) {
-        CompletableFuture.supplyAsync(() -> {
-            Player player = Bukkit.getPlayer(memberId);
-            if (player == null || !player.isOnline()) {
-                return null;
-            }
-            return Pair.of(player, getMessageHistory(player));
-        }).thenAccept(pair -> {
-            if (pair != null) {
-                List<String> messages = new ArrayList<>(pair.right());
-                Optional.ofNullable(appendContent).ifPresent(messages::add);
-                NMSDispatcher.getInstance().resetChatDialog(pair.left(), messages);
-            }
-        });
+        /* 异步需要确保线程的安全性，它可能会导致消息被吞，因此这里采用分布式锁来解决此问题
+         * 分布式锁也存在着一定的问题，在吞吐量大的情况下分布式锁不停的被创建销毁，可能会导致性能问题
+         * Todo: 可以为每个玩家创建一个单线程来处理消息的重置
+         */
+        RedissonUtil.doAsyncWithLock(MagicChat.getInstance().getRedisStore(),
+                String.format(RESET_DIALOG_LOCK, memberId), String.valueOf(memberId), 3000,
+                () -> CompletableFuture.supplyAsync(() -> {
+                        Player player = Bukkit.getPlayer(memberId);
+                        if (player == null || !player.isOnline()) {
+                            return null;
+                        }
+                        return Pair.of(player, getMessageHistory(player));
+                    }).thenAccept(pair -> {
+                        if (pair != null) {
+                            List<String> messages = new ArrayList<>(pair.right());
+                            Optional.ofNullable(appendContent).ifPresent(messages::add);
+                            NMSDispatcher.getInstance().resetChatDialog(pair.left(), messages);
+                        }
+                    }));
+    }
+
+    /**
+     * 同步重置玩家聊天框
+     * 运行在聊天框末尾加上内容
+     * @param appendContent 您需要在聊天框末尾加上的内容
+     */
+    public void resetChatDialog(@Nullable String appendContent) {
+        /* Todo 同步在吞吐量较大的时候，产生的性能消耗会更大。 可以考虑使用 asyncResetChatDialog 方法 */
+        Player player = Bukkit.getPlayer(memberId);
+        if (player == null || !player.isOnline()) {
+            return;
+        }
+        List<String> messages = new ArrayList<>(getMessageHistory(player));
+        Optional.ofNullable(appendContent).ifPresent(messages::add);
+        NMSDispatcher.getInstance().resetChatDialog(player, messages);
     }
 
     /**
@@ -225,7 +248,7 @@ public class Member {
     }
 
     public void resetChatDialog() {
-        blockState.resetChatDialog(this, null);
+        blockState.resetChatDialog(this);
     }
 
     public void chat(ChannelMessage message) {

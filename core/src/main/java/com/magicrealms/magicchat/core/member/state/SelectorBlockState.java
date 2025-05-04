@@ -6,7 +6,6 @@ import com.magicrealms.magicchat.core.member.Member;
 import com.magicrealms.magicchat.core.message.ExclusiveMessage;
 import com.magicrealms.magicchat.core.message.exclusive.SelectorMessage;
 import org.bukkit.Bukkit;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Ryan-0916
@@ -46,10 +45,11 @@ public class SelectorBlockState implements BlockState {
         if (!(message instanceof SelectorMessage)) {
             member.addMessageHistory(message);
         }
+        resetChatDialog(member);
     }
 
     @Override
-    public void resetChatDialog(Member member, @Nullable String appendContent) {
+    public void resetChatDialog(Member member) {
         member.asyncResetChatDialog(selectorListener != null ?
                 selectorListener.getSelector().getContent() : null);
     }

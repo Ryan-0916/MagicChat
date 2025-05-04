@@ -101,7 +101,8 @@ public class Channel extends AbstractChannel{
                 })
                 .retractListener(retractInfo -> {
                     /* 捕获通知推送 尝试将消息添加至聊天记录中 */
-                    MessageHistoryStorage.getInstance().retractChannelMessage(this, retractInfo);
+                    MessageHistoryStorage.getInstance()
+                            .retractChannelMessage(this, retractInfo);
                     /* 重置每个人的聊天框 */
                     for (Member member : members) {
                         member.resetChatDialog();

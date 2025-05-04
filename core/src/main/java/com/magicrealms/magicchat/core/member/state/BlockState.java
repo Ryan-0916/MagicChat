@@ -2,7 +2,6 @@ package com.magicrealms.magicchat.core.member.state;
 
 import com.magicrealms.magicchat.core.member.Member;
 import com.magicrealms.magicchat.core.message.ExclusiveMessage;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Ryan-0916
@@ -19,5 +18,5 @@ public interface BlockState {
     /* 消息处理 */
     default void handleMessage(Member member, ExclusiveMessage message){}
     /* 重置聊天框 */
-    default void resetChatDialog(Member member, @Nullable String appendContent){}
+    default void resetChatDialog(Member member){}
 }

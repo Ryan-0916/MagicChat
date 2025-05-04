@@ -15,7 +15,6 @@ import com.magicrealms.magicchat.core.message.ChannelMessage;
 import com.magicrealms.magicchat.core.message.ExclusiveMessage;
 import com.magicrealms.magicchat.core.message.enums.MessageType;
 import com.magicrealms.magicchat.core.store.MemberStorage;
-import com.magicrealms.magicchat.core.store.MessageHistoryStorage;
 import com.magicrealms.magiclib.bukkit.message.helper.AdventureHelper;
 import com.magicrealms.magiclib.bukkit.packet.PacketListener;
 import com.magicrealms.magiclib.bukkit.packet.Receive;
@@ -92,10 +91,10 @@ public class ChatListener implements Listener {
         if (StringUtils.contains(msg, DIALOG_PATH)) {
             return;
         }
+        event.setCancelled(true);
         AbstractMessage message = new MessageBuilder(null, msg
         ).build(MessageType.EXCLUSIVE);
         Member member = MemberStorage.getInstance().retrieveMember(event.getPlayer());
-        MessageHistoryStorage.getInstance().addMessage(member, (ExclusiveMessage) message);
+        member.sendMessage((ExclusiveMessage) message);
     }
-
 }

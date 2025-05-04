@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static com.magicrealms.magicchat.core.MagicChatConstant.MAX_HISTORY_SIZE;
+
 /**
  * @author Ryan-0916
  * @Desc 消息缓存类
@@ -40,6 +42,10 @@ public class MessageHistoryRepository<T, M> {
             throw new NullPointerException(String.format("%s 没有初始化消息记录存储", key));
         }
         storage.get(key).add(message);
+        if (storage.get(key).size() > MAX_HISTORY_SIZE) {
+            storage.get(key).poll();
+        }
+
     }
 
     public List<M> getMessages(T key) {
