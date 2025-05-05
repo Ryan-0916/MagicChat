@@ -33,7 +33,7 @@ public class CoreController {
                         "PlayerMessage.Success.ReloadFile"));
     }
 
-    @Command(text = "^Reload\\s\\S+$", permissionType = PermissionType.CONSOLE_OR_PERMISSION,
+    @Command(text = "^Reload\\s(?!all\\b)\\S+$", permissionType = PermissionType.CONSOLE_OR_PERMISSION,
             permission = "magic.command.magicchat.all||magic.command.magicchat.reload")
     public void reload(CommandSender sender, String[] args){
         MagicChat.getInstance().getConfigManager()
