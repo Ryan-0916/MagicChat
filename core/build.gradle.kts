@@ -3,23 +3,24 @@ val projectGroup : String by project
 val projectArtifactId : String by project
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
-    compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
+    implementation(project(":common"))
+    implementation(project(":api"))
+    compileOnly("io.papermc.paper:paper-api:${rootProject.properties["paper_version"]}-R0.1-SNAPSHOT")
+    compileOnly("com.magicrealms:magiclib:${rootProject.properties["magic_lib_version"]}")
+    compileOnly("com.github.retrooper:packetevents-spigot:${rootProject.properties["packetevents_version"]}")
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
-    options.release.set(17)
+    options.release.set(21)
 }
 
 publishing {

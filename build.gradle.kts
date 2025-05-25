@@ -12,12 +12,8 @@ subprojects {
     apply(plugin = "com.gradleup.shadow")
 
     dependencies {
-        compileOnly("org.projectlombok:lombok:1.18.30")
-        annotationProcessor("org.projectlombok:lombok:1.18.30")
-        testAnnotationProcessor("org.projectlombok:lombok:1.18.30")
-        testCompileOnly("org.projectlombok:lombok:1.18.30")
-
-        compileOnly("com.magicrealms:magiclib:1.0")
+        compileOnly("org.projectlombok:lombok:${rootProject.properties["lombok_version"]}")
+        annotationProcessor("org.projectlombok:lombok:${rootProject.properties["lombok_version"]}")
     }
 
     repositories {

@@ -1,30 +1,29 @@
 package com.magicrealms.magicchat.core.listener;
 
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
-import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.protocol.PacketSide;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientChatMessage;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
-import com.magicrealms.magicchat.core.member.Member;
-import com.magicrealms.magicchat.core.message.builder.MessageBuilder;
-import com.magicrealms.magicchat.core.message.AbstractMessage;
-import com.magicrealms.magicchat.core.message.ChannelMessage;
-import com.magicrealms.magicchat.core.message.ExclusiveMessage;
-import com.magicrealms.magicchat.core.message.enums.MessageType;
-import com.magicrealms.magicchat.core.store.MemberStorage;
+import com.magicrealms.magicchat.api.member.Member;
+import com.magicrealms.magicchat.api.message.builder.MessageBuilder;
+import com.magicrealms.magicchat.api.message.AbstractMessage;
+import com.magicrealms.magicchat.api.message.ChannelMessage;
+import com.magicrealms.magicchat.api.message.ExclusiveMessage;
+import com.magicrealms.magicchat.api.message.enums.MessageType;
+import com.magicrealms.magicchat.core.BukkitMagicChat;
 import com.magicrealms.magiclib.bukkit.message.helper.AdventureHelper;
 import com.magicrealms.magiclib.bukkit.packet.PacketListener;
-import com.magicrealms.magiclib.bukkit.packet.Receive;
 import com.magicrealms.magiclib.bukkit.packet.Send;
+import io.papermc.paper.event.player.AsyncChatEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-import static com.magicrealms.magicchat.core.MagicChatConstant.DIALOG_PATH;
+import static com.magicrealms.magicchat.common.MagicChatConstant.DIALOG_PATH;
 
 /**
  * @author Ryan-0916
@@ -37,35 +36,10 @@ public class ChatListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        Member member = MemberStorage.getInstance().retrieveMember(event.getPlayer());
-        member.resetChatDialog();
-    }
-
-    @Receive(state = ConnectionState.PLAY,
-            side = PacketSide.CLIENT,
-            name = "CHAT_MESSAGE",
-            priority = PacketListenerPriority.MONITOR)
-    public void onChat(PacketReceiveEvent event) {
-        if (event.isCancelled()) return;
-        /* 添加聊天记录 */
-        Member member = MemberStorage.getInstance()
-                .retrieveMember(event.getPlayer());
-        WrapperPlayClientChatMessage chatMessage =
-                new WrapperPlayClientChatMessage(event);
-        AbstractMessage message = new MessageBuilder(event
-                .getUser()
-                .getUUID(),
-                chatMessage.getMessage())
-                .build(MessageType.CHANNEL);
-        member.chat((ChannelMessage) message);
-    }
-
-    @Send(state = ConnectionState.PLAY,
-            side = PacketSide.SERVER,
-            name = "CHAT_MESSAGE",
-            priority = PacketListenerPriority.LOWEST)
-    public void onChat(PacketSendEvent event) {
-        event.setCancelled(true);
+        BukkitMagicChat.getInstance()
+                .getMemberManager()
+                .getMember(event.getPlayer())
+                .resetChatDialog();
     }
 
     /**
@@ -91,10 +65,28 @@ public class ChatListener implements Listener {
         if (StringUtils.contains(msg, DIALOG_PATH)) {
             return;
         }
-        event.setCancelled(true);
         AbstractMessage message = new MessageBuilder(null, msg
         ).build(MessageType.EXCLUSIVE);
-        Member member = MemberStorage.getInstance().retrieveMember(event.getPlayer());
+        Member member = BukkitMagicChat
+                .getInstance()
+                .getMemberManager()
+                .getMember(event.getPlayer());
         member.sendMessage((ExclusiveMessage) message);
     }
+
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onChatEvent(AsyncChatEvent event) {
+        Member member = BukkitMagicChat
+                .getInstance()
+                .getMemberManager()
+                .getMember(event.getPlayer());
+        AbstractMessage message = new MessageBuilder(event
+                .getPlayer().getUniqueId(),
+                AdventureHelper.serializeComponent(event.message()))
+                .build(MessageType.CHANNEL);
+        member.chat((ChannelMessage) message);
+        event.setCancelled(true);
+    }
+
 }

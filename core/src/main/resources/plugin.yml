@@ -1,6 +1,6 @@
 name: MagicChat
 version: ${projectVersion}
-main: com.magicrealms.magicchat.core.MagicChat
+main: com.magicrealms.magicchat.core.BukkitMagicChat
 api-version: 1.21
 author: Ryan0916
 commands:
